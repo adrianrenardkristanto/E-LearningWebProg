@@ -53,7 +53,6 @@
 body {
     /* background-color: rgba(128, 128, 128, 0.596);
     color: var(--dark); */
-    background-color: var(--light);
     color: var(--dark);
     line-height: 1.6;
 }
@@ -367,3 +366,5 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+

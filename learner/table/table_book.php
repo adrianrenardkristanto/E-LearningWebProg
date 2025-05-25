@@ -12,7 +12,7 @@
                 echo "failed to connect to mySQL : " . mysqli_connect_error();
             } 
 
-            $sql = "CREATE TABLE book (book_id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, author VARCHAR(255), description TEXT)";
+            $sql = "CREATE TABLE book (book_id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL, author VARCHAR(255), description TEXT, cover VARCHAR(255))";
 
             if(mysqli_query($con, $sql)) {
                 echo " table book created succsesfully";
