@@ -1,10 +1,11 @@
 <?php
   session_start();
-  include "../connection.php";
   if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+    header("Location: login.php");
     exit();
   }
+
+  include "../connection.php";
 ?>
 
 <!DOCTYPE html>
@@ -116,7 +117,9 @@
       <a href="Resource.php">Resource</a>
       <a href="more.php">More</a>
     </nav>
-    <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
+    <a href="profile.php">
+      <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 1rem;">
+    </a>
   </div>
 </header>
 
