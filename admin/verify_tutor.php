@@ -6,17 +6,50 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <?php
+        session_start();
+        require_once('../connection.php');
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $role = $row['role'];
+
+            if ($role !== 'Admin') {
+                header("Location: ../admin/homeAdmin.html");
+                exit;
+            } else if ($row['role'] === 'Learner') {
+                header("Location: learner/course.php");
+            }
+        } else {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        // Mencegah caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+    ?>
+
     <header>
         <div class="header-container">
             <div class="logo"><a href="homeAdmin.html" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
             <nav class="navbar">
                 <div>
-                    <a href="verify_tutor.html">Verifikasi Tutor</a>
-                    <a href="remove_tutor.html">Hapus Tutor</a>
+                    <a href="verify_tutor.php">Verifikasi Tutor</a>
+                    <a href="remove_tutor.php">Hapus Tutor</a>
                     <a href="verify_trans.html">Verifikasi Transaksi</a>
                 </div>
             </nav>
-            <button class="login-btn" onclick="window.location.href='../index.html'">Logout</button>
+            <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
         </div>
     </header>
 

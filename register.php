@@ -6,6 +6,11 @@
     <title>Register - E-Learning</title>
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        input[type="radio"]:checked + label {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -39,6 +44,18 @@
                     <input type="password" id="password" name="password" placeholder="Create a password (min 8 characters)" minlength="8" required>
                 </div>
                 
+                <input type="radio" id="learner" name="role" value="Learner">
+                <label for="learner" id="label-learner">Learner</label>
+
+                <input type="radio" id="tutor" name="role" value="Tutor">
+                <label for="tutor" id="label-tutor">Tutor</label>
+
+                <div class="form-group"></div>
+
+                <input type="checkbox" name="course[]" id="ddt" value="Digital Design Thinking"> Digital Design Thinking <br>
+                <input type="checkbox" name="course[]" id="wd" value="Web Development"> Web Development <br>
+                <input type="checkbox" name="course[]" id="cad" value="Creative Art Design"> Creative Art Design <br>
+
                 <button type="submit" class="login-btn" name="register">Register</button>
                 
                 <div class="form-footer">
@@ -48,6 +65,33 @@
         </div>
     </div>
 
+    <!-- <script>
+        const learnerRadio = document.getElementById('learner');
+        const tutorRadio = document.getElementById('tutor');
+        const labelLearner = document.getElementById('label-learner');
+        const labelTutor = document.getElementById('label-tutor');
+        const courseSelect = document.getElementById('course-select');
+
+        function updateRoleUI() {
+            if (learnerRadio.checked) {
+                labelLearner.style.fontWeight = 'bold';
+                labelTutor.style.fontWeight = 'normal';
+                courseSelect.style.display = 'none';
+            } else if (tutorRadio.checked) {
+                labelTutor.style.fontWeight = 'bold';
+                labelLearner.style.fontWeight = 'normal';
+                courseSelect.style.display = 'block';
+            }
+        }
+
+        learnerRadio.addEventListener('change', updateRoleUI);
+        tutorRadio.addEventListener('change', updateRoleUI);
+
+        // Inisialisasi saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', updateRoleUI);
+    </script> -->
+
+
     <?php
         require_once('connection.php');
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -55,25 +99,63 @@
                 $name = $_POST['name'];
                 $email = $_POST['email'];
                 $password = $_POST['password'];
-                    
-                $sql = "select email from users where email = '$email'";
+                $role = isset($_POST['role']) ? $_POST['role'] : "Admin";
+                $course = isset($_POST['course']) ? $_POST['course'] : []; // Pastikan $course terisi
+                
+                $sql = "SELECT email FROM users WHERE email = '$email'";
                 $result = $conn->query($sql);
                 if ($result) {
                     if ($result->num_rows < 1) {
                         if (strlen($password) >= 8) {
-                            $sql = "insert into users (name, email, password,role) values ('$name', '$email', '".password_hash($password, PASSWORD_BCRYPT)."', 'Learner')";
+                            if (empty($course)) {
+                                $role = "Admin"; 
+                            }
+                            
+                            // Ambil tanggal saat ini dalam format Y-m-d
+                            $created_at = date("Y-m-d");
+
+                            $sql = "INSERT INTO users (name, email, password, role, isVerified, created_at) VALUES ('$name', '$email', '".password_hash($password, PASSWORD_BCRYPT)."', '$role', NULL, '$created_at')";
                             $result = $conn->query($sql);
                             if ($result) {
-                                echo "<script>alert('Akun berhasil ditambahkan');window.location='login.php';</script>";
-                                exit();
+                                if ($role == "Tutor") {
+                                    $sql = "UPDATE users SET isVerified = 'Unverified' WHERE email = '$email'";
+                                    $result = $conn->query($sql);
+                                    if ($result) {
+                                        echo "<script>alert('Silahkan tunggu akun Anda terverifikasi!');</script>";
+                                    } else {
+                                        echo "<script>alert('Gagal membuat akun');</script>";
+                                    }
+                                } else if ($role == "Learner") {
+                                    echo "<script>alert('Akun berhasil ditambahkan')</script>";
+                                } else if ($role == "Admin") {
+                                    echo "<script>alert('Akun Admin berhasil ditambahkan')</script>";
+                                }
+                                
+                                $sql = "SELECT user_id FROM users WHERE email = '$email'";
+                                $result = $conn->query($sql);
+                                if ($result) {
+                                    $row = $result->fetch_assoc();
+                                    $user_id = $row['user_id'];
+                                    if ($role != "Admin" && isset($course)) { 
+                                        foreach ($course as $course_name) {
+                                            $sql = "SELECT id FROM course WHERE title = '$course_name'";
+                                            $result = $conn->query($sql);
+                                            if ($result) {
+                                                $row = $result->fetch_assoc();
+                                                $course_id = $row['id'];
+                                                $sql = "INSERT INTO user_course (user_id, course_id) VALUES ('$user_id', '$course_id')";
+                                                $conn->query($sql);
+                                            }
+                                        }
+                                    }
+                                }
+                                echo "<script>window.location='login.php'</script>";
                             } else {
                                 echo "<script>alert('Gagal membuat akun');</script>";
                             }
-                            //   echo "<script>alert('Tunggu ');</script>";
-                        } else{
+                        } else {
                             echo "<script>alert('Password min 8 karakter');</script>";
                             echo "<script>window.location='register.php';</script>";  
-                            // exit;
                         }
                     } else {
                         echo "<script>alert('Email sudah pernah digunakan. Silahkan input email yang berbeda!');</script>";
@@ -84,63 +166,5 @@
             }
         }
     ?>
-
-    <!-- <script>
-        // Simulated database
-        const userDatabase = JSON.parse(localStorage.getItem('userDatabase')) || [];
-
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            let email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
-            const emailError = document.getElementById('emailError');
-            
-            // Validate email based on role
-            let isValid = true;
-            emailError.style.display = 'none';
-            
-            if (role === 'tutor') {
-                if (!email.endsWith('@tutor.elearning.id')) {
-                    emailError.textContent = 'Tutor email must end with @tutor.elearning.id';
-                    emailError.style.display = 'block';
-                    isValid = false;
-                }
-            } else if (role === 'admin') {
-                if (!email.endsWith('@admin.elearning.id')) {
-                    emailError.textContent = 'Admin email must end with @admin.elearning.id';
-                    emailError.style.display = 'block';
-                    isValid = false;
-                }
-            }
-            
-            if (!isValid) return;
-            
-            // Check if email already exists
-            if (userDatabase.some(user => user.email === email)) {
-                emailError.textContent = 'Email already registered';
-                emailError.style.display = 'block';
-                return;
-            }
-            
-            // Create user object
-            const user = {
-                id: Date.now().toString(),
-                name,
-                email,
-                password, 
-                role,
-                createdAt: new Date().toISOString()
-            };
-
-            userDatabase.push(user);
-            localStorage.setItem('userDatabase', JSON.stringify(userDatabase));
-            
-            alert(`Registration successful as ${role}! Please login.`);
-            window.location.href = 'login.html';
-        });
-    </script> -->
 </body>
 </html>
