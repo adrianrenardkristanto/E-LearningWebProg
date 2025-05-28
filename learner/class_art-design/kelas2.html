@@ -11,14 +11,7 @@
     <div class="navbar">
       <div class="logo">E-Learning</div>
       <nav>
-        <div class="dropdown">
-            <button class="dropdown-toggle" onclick="toggleDropdown()">MEMBER AREA</button>
-            <div class="dropdown-menu" id="memberAreaMenu">
-              <button onclick="aksesMemberArea('diskusi')">Diskusi</button>
-              <button onclick="aksesMemberArea('exam')">Exam</button>
-            </div>
-          </div>
-          <a href="../detail_art-design.html" class="nav-link">Back</a>
+          <a href="../detail_art-design.php" class="nav-link">Back</a>
       </nav>
     </div>
 
@@ -33,7 +26,6 @@
     </article>
   </main>
 
-       <!-- Footer -->
        <footer>
         <div class="container">
           <div class="footer-content">
@@ -89,7 +81,7 @@
         }
       });
 
-    const isSubscribed = false; // false karena belum berlangganan
+    const isSubscribed = true; // false karena belum berlangganan
 
     function aksesMemberArea(section) {
       if (!isSubscribed) {
