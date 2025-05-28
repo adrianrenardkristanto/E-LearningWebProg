@@ -1,9 +1,10 @@
-<?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
+<?php 
+  session_start();
+  if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
-    exit;
-}
+    exit();
+  }
+  include "../connection.php";
 ?>
 
 <!DOCTYPE html>
@@ -14,45 +15,49 @@ if (!isset($_SESSION['user_id'])) {
   <title>Info Authors & Contact</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <style>
+    :root {
+      --primary: #2C3E50;
+      --accent: #18BC9C;
+      --light-bg: #ECF0F1;
+      --white: #FFFFFF;
+      --gray: #BDC3C7;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f8fa;
+      background-color: var(--light-bg);
       color: #333;
     }
 
     header {
-      background-color: rgba(145, 224, 220, 0.73);
+      background-color: var(--primary);
+      padding: 1rem 2rem;
+      color: var(--white);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
     }
 
     .logo {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: bold;
+      color: var(--accent);
     }
 
     .navbar a {
       margin: 0 1rem;
       text-decoration: none;
-      color: #333;
+      color: var(--white);
       font-weight: 500;
     }
 
-    .login-btn {
-      background: #3399cc;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
+    .navbar a:hover {
+      color: var(--accent);
     }
 
     main {
       padding: 2rem;
-      animation: fadeInUp 1s ease forwards;
     }
 
     .section-title {
@@ -60,6 +65,7 @@ if (!isset($_SESSION['user_id'])) {
       margin-bottom: 2rem;
       font-size: 2rem;
       font-weight: bold;
+      color: var(--primary);
     }
 
     .author-grid {
@@ -70,73 +76,72 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     .author-card {
-      background: #ffffff;
+      background: var(--white);
       border-radius: 16px;
-      width: 280px;
+      width: 260px;
       text-align: center;
       padding: 1.5rem;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-      transform: translateY(20px);
-      opacity: 0;
-      animation: fadeInUp 0.8s ease forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .author-card:nth-child(2) {
-      animation-delay: 0.3s;
+    .author-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     }
 
     .author-card img {
-      width: 220px;
-      height: 220px;
-      border-radius: 30%;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
       object-fit: cover;
       margin-bottom: 1rem;
+      border: 4px solid var(--accent);
     }
 
     .author-card h3 {
       margin: 0.5rem 0;
+      font-size: 1.2rem;
+      color: var(--primary);
     }
 
     .author-card p {
       margin: 0.25rem 0;
+      color: #666;
     }
 
     .social a {
       display: inline-block;
       margin: 0.25rem;
       text-decoration: none;
-      color: #3399cc;
+      color: var(--accent);
+      font-weight: 500;
     }
 
     .contact-section {
-      background: #ffffff;
+      background: var(--white);
       border-radius: 16px;
       max-width: 600px;
       margin: 4rem auto 2rem;
       padding: 2rem;
       text-align: center;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 1s ease forwards;
-      animation-delay: 0.6s;
     }
 
     .contact-section img {
-      width: 120px;
-      height :120px;
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
       margin-bottom: 1rem;
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(40px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .contact-section h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .contact-section p {
+      color: #444;
     }
 
     @media (max-width: 768px) {
@@ -152,10 +157,12 @@ if (!isset($_SESSION['user_id'])) {
 <header>
   <div class="logo">E-Learning</div>
   <nav class="navbar">
-    <a href="course_test.php">Home</a>
+    <a href="course.php">Home</a>
     <a href="Resource.php">Resource</a>
-    <a href="more.php">More</a>
-    <a href="profile.php"><img src="../img/profile.jpg" alt="Profile" style="width:30px; vertical-align:middle; border-radius:50%;"></a>
+    <a href="Schedule.php">Schedule</a>
+    <a href="profile.php">
+      <img src="../img/profile.jpg" alt="Profile" style="width:30px; vertical-align:middle; border-radius:50%;">
+    </a>
   </nav>
 </header>
 

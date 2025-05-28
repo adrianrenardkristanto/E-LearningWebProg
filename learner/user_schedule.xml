@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<jadwals>
+    <jadwal>
+        <kategori_id>2</kategori_id>
+        <kategori_nama>Desain Thinking</kategori_nama>
+        <tanggal>2025-05-30</tanggal>
+        <kegiatan>diskusi bersama</kegiatan>
+    </jadwal>
+<jadwal><kategori>Desain Thinking</kategori><tanggal>2025-05-31</tanggal><waktu>06:49</waktu></jadwal></jadwals>
