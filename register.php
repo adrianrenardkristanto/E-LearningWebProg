@@ -15,7 +15,7 @@
 <body>
     <header class="header">
         <a class="logo">E-Learning</a>
-        <a href="index.html" class="back-btn">Back Home</a>
+        <a href="index.php" class="back-btn">Back Home</a>
     </header>
 
     <div class="login-container">
@@ -59,7 +59,7 @@
                 <button type="submit" class="login-btn" name="register">Register</button>
                 
                 <div class="form-footer">
-                    <p>Already have an account? <a href="login.html">Login</a></p>
+                    <p>Already have an account? <a href="login.php">Login</a></p>
                 </div>
             </form>
         </div>

@@ -25,7 +25,7 @@
             if ($row['role'] === 'Learner') {
                 header("Location: ../learner/course.php");
             }else if ($row['role'] === 'Tutor') {
-                header("Location: ../tutor/manage_course.html");
+                header("Location: ../tutor/manage_course.php");
             }
         } else {
             header("Location: ../login.php");
@@ -48,7 +48,9 @@
                     <a href="verify_trans.html">Verifikasi Transaksi</a>
                 </div>
             </nav>
-            <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
+            <form action="../logout.php" method="post">
+                <button class="login-btn" name = "logout">Logout</button>
+            </form>
         </div>
     </header>
 

@@ -42,7 +42,37 @@
   </style>
 </head>
 <body>
+<?php
+        session_start();
+        require_once('../connection.php');
 
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $role = $row['role'];
+
+            if ($row['role'] === 'Learner') {
+                header("Location: ../learner/course.php");
+            }else if ($row['role'] === 'Admin') {
+                header("Location: ../admin/homeAdmin.php");
+            }
+        } else {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        // Mencegah caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+    ?>
 <header>
   <div class="header-container">
     <div class="logo">E-Learning</div>
@@ -51,7 +81,9 @@
       <a href="Resource.php">Resource</a>
       <a href="manage_course.php">Manage Courses</a>
     </nav>
-    <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
+    <form action="../logout.php" method="post">
+        <button class="login-btn" name = "logout">Logout</button>
+    </form>
   </div>
 </header>
 

@@ -50,7 +50,9 @@
                     <a href=""></a>
                 </div>
             </nav>
-            <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
+            <form action="../logout.php" method="post">
+                <button class="login-btn" name = "logout">Logout</button>
+            </form>
         </div>
     </header>
 

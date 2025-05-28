@@ -67,7 +67,7 @@
                     header("Location: learner/course.php");
                     exit;
                 } else if ($role === 'Tutor') {
-                    header("Location: tutor/manage_course.html");
+                    header("Location: tutor/manage_course.php");
                     exit;
                 } else if ($role === 'Admin') {
                     header("Location: admin/homeAdmin.php");
@@ -98,7 +98,7 @@
                                 if ($row['isVerified'] == 'Unverified') {
                                     echo "<script>alert('Silahkan tunggu akun Anda terverifikasi!')</script>";
                                 } else if ($row['isVerified'] == 'Confirmed') {
-                                    header("Location: tutor/manage_course.html");
+                                    header("Location: tutor/manage_course.php");
                                 }
                             } else if ($row['role'] === 'Admin') {
                                 header("Location: admin/homeAdmin.php");
