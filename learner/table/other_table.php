@@ -7,7 +7,7 @@
 </head>
 <body>
     <?php
-        $con = mysqli_connect("localhost", "root", "", "elearning");
+        $con = mysqli_connect("localhost", "root", "", "e-learning");
         if(mysqli_connect_errno()){
             echo "Failed to connect to MySQL: " . mysqli_connect_error();
         }

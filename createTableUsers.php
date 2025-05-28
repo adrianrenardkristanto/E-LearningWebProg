@@ -11,6 +11,8 @@
 		phone_number VARCHAR(20) NOT NULL,
 		profile_picture mediumblob NULL,
 		role enum('Learner', 'Tutor','Admin') Not Null
+		isVerified enum('Verified', 'Unverified') DEFAULT 'Unverified',
+		created_at Date NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		);
 	";
 			
