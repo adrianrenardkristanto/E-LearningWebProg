@@ -54,14 +54,6 @@
             FOREIGN KEY (category_id) REFERENCES kategori_modul(id) ON DELETE CASCADE
         );";
 
-        $sql .= "CREATE TABLE quiz_choices (
-            choice_id INT AUTO_INCREMENT PRIMARY KEY,
-            question_id INT NOT NULL,
-            choice_text VARCHAR(255) NOT NULL,
-            is_correct BOOLEAN NOT NULL DEFAULT 0,
-            FOREIGN KEY (question_id) REFERENCES quiz_questions(question_id) ON DELETE CASCADE
-        );";
-
         $sql .= "INSERT INTO kategori_modul (id, nama, detail_page) VALUES
         (1, 'Art & Design', 'detail_art-design.php'),
         (2, 'Desain Thinking', 'detail_desain-thinking.php'),
