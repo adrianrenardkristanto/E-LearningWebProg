@@ -1,153 +1,226 @@
-<?php
+<?php 
   session_start();
-  include "../connection.php";
   if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit();
   }
+  include "../connection.php";
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>E-Learning Platform - Manage Courses</title>
-  <link rel="stylesheet" href="../css/course.css">
+  <title>Manage Courses - E-Learning Platform</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <style>
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
+    /* Styles for the page */
+    :root {
+      --primary: #2C3E50;
+      --accent: #18BC9C;
+      --light-bg: #ECF0F1;
+      --white: #FFFFFF;
+      --gray: #BDC3C7;
+      --dark: #2C3E50;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: var(--light-bg);
+      color: var(--dark);
+    }
+
+    header {
+      background-color: var(--primary);
+      padding: 1rem 2rem;
+      color: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .navbar a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 500;
+    }
+    .navbar a:hover {
+      color: var(--accent);
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+
+    .grid-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .grid-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      background: #f9f9f9;
+    }
+
+    .grid-card img {
       width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.4);
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .grid-content {
+      padding: 1rem;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    iframe {
+      border-radius: 10px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
     }
 
     .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 30%;
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .modal-actions button {
+      background: var(--accent);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      margin-top: 1rem;
+      cursor: pointer;
     }
 
     .blur {
       filter: blur(5px);
     }
+
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+
+    .edit-btn, .delete-btn {
+      background-color: var(--accent);
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+    }
   </style>
 </head>
 <body>
-<?php
-        session_start();
-        require_once('../connection.php');
 
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: ../login.php");
-            exit;
-        }
-
-        $user_id = $_SESSION['user_id'];
-        $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $role = $row['role'];
-
-            if ($row['role'] === 'Learner') {
-                header("Location: ../learner/course.php");
-            }else if ($row['role'] === 'Admin') {
-                header("Location: ../admin/homeAdmin.php");
-            }
-        } else {
-            header("Location: ../login.php");
-            exit;
-        }
-
-        // Mencegah caching
-        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-        header("Cache-Control: post-check=0, pre-check=0", false);
-        header("Pragma: no-cache");
-    ?>
 <header>
-  <div class="header-container">
-    <div class="logo">E-Learning</div>
-    <nav class="navbar">
-      <a href="Info.php">Info</a>
-      <a href="Resource.php">Resource</a>
-      <a href="manage_course.php">Manage Courses</a>
-    </nav>
-    <form action="../logout.php" method="post">
-        <button class="login-btn" name = "logout">Logout</button>
-    </form>
-  </div>
+  <div class="logo">E-Learning</div>
+  <nav class="navbar">
+    <a href="Info.php">Info</a>
+    <a href="Resource.php">Resource</a>
+    <a href="manage_course.php">Manage Courses</a>
+  </nav>
+  <a href="profile.php">
+    <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
+  </a>
 </header>
 
 <main>
   <section class="hero" id="courses">
-    <h1>Manage Courses</h1>
+    <h1 style="text-align:center; padding: 2rem; color: var(--primary); background: linear-gradient(to right, var(--primary), var(--accent)); color: white;">Manage Courses</h1>
   </section>
 
-  <!-- Modul -->
   <section>
-  <h2 class="section-title">Daftar Modul</h2>
-  <div class="section-grid">
-    <?php
-      $modul_result = mysqli_query($conn, "
-        SELECT 
-          m.modul_id,
-          m.title,
-          m.description,
-          m.is_premium,
-          k.nama AS kategori_nama,
-          k.detail_page
-        FROM modul m
-        LEFT JOIN kategori_modul k ON m.category_id = k.id
-      ");
-
-      while ($modul = mysqli_fetch_assoc($modul_result)):
-      $detailFile = $modul['detail_page']; // ← ambil dari DB
-    ?>
-      <div class="grid-card">
-        <div class="grid-content">
-          <h3><?= htmlspecialchars($modul['title']) ?></h3>
-          <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
-          <small>
-            Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> |
-            Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
-          </small>
-          <div class="action-buttons">
-            <button class="edit-btn" onclick="showEditModal('modul', <?= $modul['modul_id'] ?>)">Edit</button>
-            <button class="delete-btn" onclick="deleteItem('modul', <?= $modul['modul_id'] ?>)">Hapus</button>
+    <h2 class="section-title">Daftar Modul</h2>
+    <div class="section-grid">
+      <?php
+        $modul_result = mysqli_query($conn, "
+          SELECT m.modul_id, m.title, m.description, m.is_premium, k.nama AS kategori_nama, k.detail_page
+          FROM modul m
+          LEFT JOIN kategori_modul k ON m.category_id = k.id
+        ");
+        while ($modul = mysqli_fetch_assoc($modul_result)):
+          $detailFile = $modul['detail_page']; 
+      ?>
+        <div class="grid-card">
+          <div class="grid-content">
+            <h3><?= htmlspecialchars($modul['title']) ?></h3>
+            <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
+            <small>
+              Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> | Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
+            </small>
+            <div class="action-buttons">
+              <button class="edit-btn" onclick="showEditModal(<?= $modul['modul_id'] ?>, 'modul')">Edit</button>
+              <button class="delete-btn" onclick="deleteItem(<?= $modul['modul_id'] ?>, 'modul')">Hapus</button>
+            </div>
           </div>
         </div>
-      </div>
-    <?php endwhile; ?>
+      <?php endwhile; ?>
     </div>
   </section>
 
-
-  <!-- Video -->
   <section>
     <h2 class="section-title">Video Pembelajaran</h2>
     <div class="section-grid">
       <?php
-      $video_result = mysqli_query($conn, "SELECT * FROM video ORDER BY upload_date DESC");
-      while ($video = mysqli_fetch_assoc($video_result)): ?>
+        $video_result = mysqli_query($conn, "SELECT * FROM video ORDER BY upload_date DESC");
+        while ($video = mysqli_fetch_assoc($video_result)):
+      ?>
         <div class="grid-card">
           <div class="grid-content">
             <h3><?= htmlspecialchars($video['title']) ?></h3>
             <p><?= nl2br(htmlspecialchars($video['description'])) ?></p>
-            <div style="margin-top: 0.5rem;">
-              <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
-            </div>
+            <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
             <div class="action-buttons">
-              <button class="edit-btn" onclick="showEditModal('video', <?= $video['id'] ?>)">Edit</button>
-              <button class="delete-btn" onclick="deleteItem('video', <?= $video['id'] ?>)">Hapus</button>
+              <button class="edit-btn" onclick="showEditModal(<?= $video['id'] ?>, 'video')">Edit</button>
+              <button class="delete-btn" onclick="deleteItem(<?= $video['id'] ?>, 'video')">Hapus</button>
             </div>
           </div>
         </div>
@@ -155,20 +228,20 @@
     </div>
   </section>
 
-  <!-- Buku -->
   <section>
     <h2 class="section-title">Rekomendasi Buku</h2>
     <div class="section-grid">
       <?php
-      $book_result = mysqli_query($conn, "SELECT * FROM book");
-      while ($book = mysqli_fetch_assoc($book_result)): ?>
+        $book_result = mysqli_query($conn, "SELECT * FROM book");
+        while ($book = mysqli_fetch_assoc($book_result)):
+      ?>
         <div class="grid-card">
-          <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku <?= htmlspecialchars($book['title']) ?>">
+          <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku">
           <div class="grid-content">
             <h3><?= htmlspecialchars($book['title']) ?></h3>
             <div class="action-buttons">
-              <button class="edit-btn" onclick="showEditModal('book', <?= $book['id'] ?>)">Edit</button>
-              <button class="delete-btn" onclick="deleteItem('book', <?= $book['id'] ?>)">Hapus</button>
+              <button class="edit-btn" onclick="showEditModal(<?= $book['id'] ?>, 'book')">Edit</button>
+              <button class="delete-btn" onclick="deleteItem(<?= $book['id'] ?>, 'book')">Hapus</button>
             </div>
           </div>
         </div>
@@ -176,65 +249,38 @@
     </div>
   </section>
 
-  <!-- Modal -->
   <div class="modal" id="editModal">
     <div class="modal-content">
-      <h3 id="modalTitle">Edit Item</h3>
-      <form id="editForm" onsubmit="saveChanges(event)">
-        <input type="hidden" id="itemId">
-        <label for="itemTitle">Title:</label>
-        <input type="text" id="itemTitle" name="itemTitle" required>
-        <label for="itemDescription">Description:</label>
-        <textarea id="itemDescription" name="itemDescription" required></textarea>
+      <h3>Edit Item</h3>
+      <form id="editForm">
+        <input type="hidden" id="itemId" data-type="">
+        <div class="form-group">
+          <label for="itemTitle">Judul</label>
+          <input type="text" id="itemTitle" name="title" required>
+        </div>
+        <div class="form-group">
+          <label for="itemDescription">Deskripsi</label>
+          <textarea id="itemDescription" name="description" required></textarea>
+        </div>
         <div class="modal-actions">
-          <button type="submit">Save</button>
-          <button type="button" onclick="closeModal()">Cancel</button>
+          <button type="button" onclick="updateItem()">Simpan</button>
+          <button type="button" onclick="closeEditModal()">Batal</button>
         </div>
       </form>
     </div>
   </div>
+
 </main>
 
-<!-- Footer -->
-<footer>
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3>E-Learning</h3>
-        <p>Your gateway to professional development and lifelong learning.</p>
-      </div>
-      <div class="footer-column">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="#courses">Courses</a></li>
-          <li><a href="Info.php">About</a></li>
-          <li><a href="Info.php">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-column">
-        <h3>Connect</h3>
-        <div class="social-links">
-          <a href="#">@Facebook</a><br>
-          <a href="#">@Twitter</a><br>
-          <a href="#">@Instagram</a><br>
-          <a href="#">@LinkedIn</a>
-        </div>
-      </div>
-    </div>
-    <div class="copyright">
-      <p>&copy; 2025 E-Learning.</p>
-    </div>
-  </div>
-</footer>
-
 <script>
-  function showEditModal(type, id) {
+  function showEditModal(id, type) {
     document.getElementById('editModal').style.display = 'block';
     document.body.classList.add('blur');
     document.getElementById('itemId').value = id;
+    document.getElementById('itemId').setAttribute('data-type', type);
 
     // Fetch data for the selected item
-    fetch(`ajax_handler.php?action=get_${type}&id=${id}`)
+    fetch(`ajax_handler.php?action=get_item&id=${id}&type=${type}`)
       .then(response => response.json())
       .then(data => {
         document.getElementById('itemTitle').value = data.title;
@@ -242,36 +288,34 @@
       });
   }
 
-  function closeModal() {
+  function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
     document.body.classList.remove('blur');
   }
 
-  function saveChanges(event) {
-    event.preventDefault();
-    const type = event.target.querySelector('#itemId').value.split(',')[0];
-    const id = event.target.querySelector('#itemId').value.split(',')[1];
+  function updateItem() {
+    const id = document.getElementById('itemId').value;
+    const type = document.getElementById('itemId').getAttribute('data-type');
     const title = document.getElementById('itemTitle').value;
     const description = document.getElementById('itemDescription').value;
 
-    fetch(`ajax_handler.php?action=update_${type}`, {
+    fetch(`ajax_handler.php?action=update_item&id=${id}&type=${type}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/json'
       },
-      body: `id=${id}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`
+      body: JSON.stringify({ title, description })
     })
     .then(response => response.text())
     .then(result => {
       alert(result);
-      closeModal();
       location.reload();
     });
   }
 
-  function deleteItem(type, id) {
+  function deleteItem(id, type) {
     if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-      fetch(`ajax_handler.php?action=delete_${type}&id=${id}`)
+      fetch(`ajax_handler.php?action=delete_item&id=${id}&type=${type}`)
         .then(response => response.text())
         .then(result => {
           alert(result);
