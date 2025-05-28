@@ -3,13 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Home - Admin</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/homeAdmin.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/homeAdmin.css">
 </head>
 <body>
+    <?php
+        session_start();
+        require_once('../connection.php');
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $role = $row['role'];
+
+            if ($row['role'] === 'Learner') {
+                header("Location: learner/course.php");
+            } else if($row['role'] === 'Tutor') {
+                header("Location: ../tutor/manage_course.php");
+            }
+        } else {
+            header("Location: ../login.php");
+            exit;
+        }
+
+        // Mencegah caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+    ?>
+
+
     <header>
         <div class="header-container">
-            <div class="logo"><a href="homeAdmin.html" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
+            <div class="logo"><a href="homeAdmin.php" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
             <nav class="navbar">
                 <div>
                     <a href=""></a>
@@ -17,7 +50,9 @@
                     <a href=""></a>
                 </div>
             </nav>
-            <button class="login-btn" onclick="window.location.href='../index.html'">Logout</button>
+            <form action="../logout.php" method="post">
+                <button class="login-btn" name = "logout">Logout</button>
+            </form>
         </div>
     </header>
 
@@ -25,11 +60,11 @@
         <section class="admin-dashboard">
             <h2 class="section-title">Admin Dashboard</h2>
             <div class="dashboard-options">
-                <a href="verify_tutor.html" class="dashboard-card orange">
+                <a href="verify_tutor.php" class="dashboard-card orange">
                     <h3>Verifikasi Tutor</h3>
                     <p>Tinjau dan setujui permintaan tutor baru.</p>
                 </a>
-                <a href="remove_tutor.html" class="dashboard-card red">
+                <a href="remove_tutor.php" class="dashboard-card red">
                     <h3>Hapus Tutor</h3>
                     <p>Kelola akun tutor dan hapus yang melanggar kebijakan.</p>
                 </a>
