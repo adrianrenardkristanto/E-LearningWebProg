@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Verify Tutor</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <?php
@@ -22,11 +22,10 @@
             $row = $result->fetch_assoc();
             $role = $row['role'];
 
-            if ($role !== 'Admin') {
-                header("Location: ../admin/homeAdmin.html");
-                exit;
-            } else if ($row['role'] === 'Learner') {
-                header("Location: learner/course.php");
+            if ($row['role'] === 'Learner') {
+                header("Location: ../learner/course.php");
+            }else if ($row['role'] === 'Tutor') {
+                header("Location: ../tutor/manage_course.html");
             }
         } else {
             header("Location: ../login.php");
@@ -57,18 +56,42 @@
         <h2 class="section-title">Verifikasi Tutor Baru</h2>
 
         <div class="tutor-list">
-            <div class="tutor-card orange">
+            <!-- <div class="tutor-card orange">
                 <div class="tutor-content">
                     <h3>Rina Mardiana</h3>
                     <p class="tutor-email">Email: rina.mardiana@email.com</p>
                     <p class="course-description">Mendaftar sebagai tutor Web Development.</p>
                     <div class="tutor-info">
                         <span><div class="icon icon-users"></div> Pengalaman 3 Tahun</span>
-                        <!-- <span><div class="icon icon-time"></div> Bergabung: 5 Apr 2025</span> -->
                     </div>
                     <button class="enroll-btn">Verifikasi</button>
                 </div>
-            </div>
+            </div> -->
+            <?php
+                require_once "../connection.php";
+
+                $sql = "SELECT * FROM users WHERE role = 'Tutor' AND isVerified = 'Unverified'";
+                $result = $conn->query($sql);
+                if ($result && $result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo '<div class="tutor-card orange">';
+                        echo '<div class="tutor-content">';
+                        echo '<h3>' . htmlspecialchars($row['name']) . '</h3>';
+                        echo '<p class="tutor-email">Email: ' . htmlspecialchars($row['email']) . '</p>';
+                        echo '<div class="tutor-info">';
+                        echo '<span><div class="icon icon-time"></div> Bergabung: ' . date('M Y', strtotime($row['created_at'])) . '</span>';
+                        echo '</div>';
+                        echo '<form action="" method="post">';
+                        echo '<input type="hidden" name="id_tutor" value="' . htmlspecialchars($row['user_id']) . '">';
+                        echo '<button class="enroll-btn" name="verify_tutor">Verifikasi</button>';
+                        echo '</form>';
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                } else {
+                    echo '<p>Tidak ada tutor yang perlu diverifikasi!</p>';
+                }
+            ?>
         </div>
     </main>
 
@@ -93,5 +116,22 @@
             &copy; 2025 Admin Panel. All rights reserved.
         </div>
     </footer>
+
+    <?php
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (isset($_POST['verify_tutor'])) {
+                $id_tutor = $_POST['id_tutor'];
+    
+                // Update status tutor menjadi verified
+                $update_sql = "UPDATE users SET isVerified = 'Verified' WHERE user_id = '$id_tutor'";
+                if ($conn->query($update_sql) === TRUE) {
+                    echo "<script>alert('Tutor berhasil diverifikasi!');</script>";
+                    echo "<script>window.location.href='verify_tutor.php';</script>";
+                } else {
+                    echo "<script>alert('Gagal memverifikasi tutor: " . $conn->error . "');</script>";
+                }
+            }
+        }
+    ?>
 </body>
 </html>

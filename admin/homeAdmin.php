@@ -23,11 +23,10 @@
             $row = $result->fetch_assoc();
             $role = $row['role'];
 
-            if ($role !== 'Admin') {
-                header("Location: ../admin/homeAdmin.html");
-                exit;
-            } else if ($row['role'] === 'Learner') {
+            if ($row['role'] === 'Learner') {
                 header("Location: learner/course.php");
+            } else if($row['role'] === 'Tutor') {
+                header("Location: ../tutor/manage_course.php");
             }
         } else {
             header("Location: ../login.php");
@@ -40,9 +39,10 @@
         header("Pragma: no-cache");
     ?>
 
+
     <header>
         <div class="header-container">
-            <div class="logo"><a href="homeAdmin.html" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
+            <div class="logo"><a href="homeAdmin.php" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
             <nav class="navbar">
                 <div>
                     <a href=""></a>

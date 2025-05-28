@@ -22,11 +22,10 @@
             $row = $result->fetch_assoc();
             $role = $row['role'];
 
-            if ($role !== 'Admin') {
-                header("Location: ../admin/homeAdmin.html");
-                exit;
-            } else if ($row['role'] === 'Learner') {
-                header("Location: learner/course.php");
+            if ($row['role'] === 'Learner') {
+                header("Location: ../learner/course.php");
+            }else if ($row['role'] === 'Tutor') {
+                header("Location: ../tutor/manage_course.html");
             }
         } else {
             header("Location: ../login.php");
@@ -41,7 +40,7 @@
 
     <header>
         <div class="header-container">
-            <div class="logo"><a href="homeAdmin.html" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
+            <div class="logo"><a href="homeAdmin.php" style="color: #4361ee; text-decoration: none;">Admin Panel</a></div>
             <nav class="navbar">
                 <div>
                     <a href="verify_tutor.php">Verifikasi Tutor</a>
@@ -56,30 +55,33 @@
     <main>
         <h2 class="section-title">Hapus Akun Tutor</h2>
 
-        <div class="tutor-list">
-            <?php
-                require_once "../connection.php";
+        <?php
+            require_once "../connection.php";
 
-                $sql = "SELECT * FROM users WHERE role = 'Tutor' AND isVerified = 'Unverified'";
-                $result = $conn->query($sql);
-                if ($result && $result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo '<div class="tutor-card">';
-                        echo '<div class="tutor-content">';
-                        echo '<h3>' . htmlspecialchars($row['name']) . '</h3>';
-                        echo '<p class="tutor-email">Email: ' . htmlspecialchars($row['email']) . '</p>';
-                        echo '<div class="tutor-info">';
-                        echo '<span><div class="icon icon-users"></div> ' . rand(1, 50) . ' Murid</span>';
-                        echo '<span><div class="icon icon-time"></div> Bergabung: ' . date('M Y', strtotime($row['created_at'])) . '</span>';
-                        echo '</div>';
-                        echo '<button class="enroll-btn" style="background-color: var(--danger);">Hapus Tutor</button>';
-                        echo '</div>';
-                    }
-                } else {
-                    echo '<p>Tidak ada tutor yang perlu dihapus.</p>';
+            $sql = "SELECT * FROM users WHERE role = 'Tutor'";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo '<div class="tutor-list">';
+                    echo '<div class="tutor-card">';
+                    echo '<div class="tutor-content">';
+                    echo '<h3>' . htmlspecialchars($row['name']) . '</h3>';
+                    echo '<p class="tutor-email">Email: ' . htmlspecialchars($row['email']) . '</p>';
+                    echo '<div class="tutor-info">';
+                    echo '<span><div class="icon icon-users"></div> ' . rand(1, 50) . ' Murid</span>';
+                    echo '<span><div class="icon icon-time"></div> Bergabung: ' . date('M Y', strtotime($row['created_at'])) . '</span>';
+                    echo '</div>';
+                    echo '<form action="" method="post">';
+                    echo '<input type="hidden" name="id_tutor" value="' . htmlspecialchars($row['user_id']) . '">';
+                    echo '<button class="enroll-btn" name="delete_tutor" style="background-color: var(--danger);" >Hapus Tutor</button>';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '</div>';
                 }
-            ?>
-        </div>
+            } else {
+                echo '<p>Tidak ada tutor yang perlu dihapus.</p>';
+            }
+        ?>
     </main>
     
     <footer>
@@ -103,5 +105,22 @@
             &copy; 2025 Admin Panel. All rights reserved.
         </div>
     </footer>
+
+    <?php
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (isset($_POST['delete_tutor'])) {
+                $id_tutor = $_POST['id_tutor'];
+    
+                // Update status tutor menjadi verified
+                $update_sql = "DELETE From users WHERE user_id = '$id_tutor'";
+                if ($conn->query($update_sql) === TRUE) {
+                    echo "<script>alert('Tutor berhasil dihapus!');</script>";
+                    echo "<script>window.location.href='remove_tutor.php';</script>";
+                } else {
+                    echo "<script>alert('Gagal memverifikasi tutor: " . $conn->error . "');</script>";
+                }
+            }
+        }
+    ?>
 </body>
 </html>

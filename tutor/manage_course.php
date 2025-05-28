@@ -12,98 +12,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>E-Learning Platform</title>
+  <title>E-Learning Platform - Manage Courses</title>
   <link rel="stylesheet" href="../css/course.css">
   <link rel="stylesheet" href="../css/styles.css" />
   <style>
-    /* header{
-        background-color: rgba(145, 224, 220, 0.73);
-    }
-
-    main{
-      background-color :#888;
-    }
-
-    .section-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
-
-    @media (max-width: 1024px) {
-      .section-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .section-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .grid-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .grid-card:hover {
-      background:rgba(212, 200, 200, 0.32);
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-
-    .grid-card img {
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
       width: 100%;
-      height: 180px;
-      object-fit: cover;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
     }
 
-    .grid-content {
-      padding: 1rem;
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 30%;
     }
 
-    .grid-content h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-      color: var(--dark);
+    .blur {
+      filter: blur(5px);
     }
-
-    .grid-content p {
-      font-size: 0.9rem;
-      color: var(--gray);
-    }
-
-    .grid-content p:hover {
-      color : #ffffff;
-    }
-
-    .modal-btn{
-      background-color:rgb(66, 174, 207);
-      color : #ffffff;
-      padding : 5px;
-      border-radius : 5px;
-      border-color: rgb(66, 174, 207);
-      cursor : pointer;
-    }
-
-    .modal-content{
-      padding : 10px;
-    }
-
-    .modal-content button{
-      background-color:rgb(66, 174, 207);
-      color : #ffffff;
-      padding : 5px;
-      border-radius : 5px;
-      border-color: rgb(66, 174, 207);
-      cursor : pointer;
-    } */
-
   </style>
 </head>
 <body>
@@ -114,7 +49,7 @@
     <nav class="navbar">
       <a href="Info.php">Info</a>
       <a href="Resource.php">Resource</a>
-      <a href="more.php">More</a>
+      <a href="manage_course.php">Manage Courses</a>
     </nav>
     <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
   </div>
@@ -122,7 +57,7 @@
 
 <main>
   <section class="hero" id="courses">
-    <h1>Mari Belajar di E-Learning</h1>
+    <h1>Manage Courses</h1>
   </section>
 
   <!-- Modul -->
@@ -145,7 +80,7 @@
       while ($modul = mysqli_fetch_assoc($modul_result)):
       $detailFile = $modul['detail_page']; // ← ambil dari DB
     ?>
-      <a class="grid-card" href="<?= $detailFile ?>?id=<?= $modul['modul_id'] ?>" style="text-decoration: none; color: inherit;">
+      <div class="grid-card">
         <div class="grid-content">
           <h3><?= htmlspecialchars($modul['title']) ?></h3>
           <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
@@ -153,8 +88,12 @@
             Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> |
             Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
           </small>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="showEditModal('modul', <?= $modul['modul_id'] ?>)">Edit</button>
+            <button class="delete-btn" onclick="deleteItem('modul', <?= $modul['modul_id'] ?>)">Hapus</button>
+          </div>
         </div>
-      </a>
+      </div>
     <?php endwhile; ?>
     </div>
   </section>
@@ -174,6 +113,10 @@
             <div style="margin-top: 0.5rem;">
               <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
             </div>
+            <div class="action-buttons">
+              <button class="edit-btn" onclick="showEditModal('video', <?= $video['id'] ?>)">Edit</button>
+              <button class="delete-btn" onclick="deleteItem('video', <?= $video['id'] ?>)">Hapus</button>
+            </div>
           </div>
         </div>
       <?php endwhile; ?>
@@ -191,12 +134,10 @@
           <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku <?= htmlspecialchars($book['title']) ?>">
           <div class="grid-content">
             <h3><?= htmlspecialchars($book['title']) ?></h3>
-            <button class="modal-btn"
-              onclick="showBookModal(
-                '<?= htmlspecialchars(addslashes($book['title'])) ?>',
-                '<?= htmlspecialchars(addslashes($book['author'])) ?>',
-                `<?= nl2br(htmlspecialchars(addslashes($book['description']))) ?>`
-              )">Tentang Buku</button>
+            <div class="action-buttons">
+              <button class="edit-btn" onclick="showEditModal('book', <?= $book['id'] ?>)">Edit</button>
+              <button class="delete-btn" onclick="deleteItem('book', <?= $book['id'] ?>)">Hapus</button>
+            </div>
           </div>
         </div>
       <?php endwhile; ?>
@@ -204,14 +145,20 @@
   </section>
 
   <!-- Modal -->
-  <div class="modal" id="bookModal">
+  <div class="modal" id="editModal">
     <div class="modal-content">
-      <h3 id="bookTitle">Judul Buku</h3>
-      <p><strong>Penulis:</strong> <span id="bookAuthor"></span></p>
-      <p id="bookDesc"></p>
-      <div class="modal-actions">
-        <button onclick="closeBookModal()">Tutup</button>
-      </div>
+      <h3 id="modalTitle">Edit Item</h3>
+      <form id="editForm" onsubmit="saveChanges(event)">
+        <input type="hidden" id="itemId">
+        <label for="itemTitle">Title:</label>
+        <input type="text" id="itemTitle" name="itemTitle" required>
+        <label for="itemDescription">Description:</label>
+        <textarea id="itemDescription" name="itemDescription" required></textarea>
+        <div class="modal-actions">
+          <button type="submit">Save</button>
+          <button type="button" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 </main>
@@ -249,15 +196,56 @@
 </footer>
 
 <script>
-  function showBookModal(title, author, desc) {
-    document.getElementById('bookTitle').textContent = title;
-    document.getElementById('bookAuthor').textContent = author;
-    document.getElementById('bookDesc').innerHTML = desc;
-    document.getElementById('bookModal').style.display = 'flex';
+  function showEditModal(type, id) {
+    document.getElementById('editModal').style.display = 'block';
+    document.body.classList.add('blur');
+    document.getElementById('itemId').value = id;
+
+    // Fetch data for the selected item
+    fetch(`ajax_handler.php?action=get_${type}&id=${id}`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('itemTitle').value = data.title;
+        document.getElementById('itemDescription').value = data.description;
+      });
   }
 
-  function closeBookModal() {
-    document.getElementById('bookModal').style.display = 'none';
+  function closeModal() {
+    document.getElementById('editModal').style.display = 'none';
+    document.body.classList.remove('blur');
+  }
+
+  function saveChanges(event) {
+    event.preventDefault();
+    const type = event.target.querySelector('#itemId').value.split(',')[0];
+    const id = event.target.querySelector('#itemId').value.split(',')[1];
+    const title = document.getElementById('itemTitle').value;
+    const description = document.getElementById('itemDescription').value;
+
+    fetch(`ajax_handler.php?action=update_${type}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `id=${id}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`
+    })
+    .then(response => response.text())
+    .then(result => {
+      alert(result);
+      closeModal();
+      location.reload();
+    });
+  }
+
+  function deleteItem(type, id) {
+    if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+      fetch(`ajax_handler.php?action=delete_${type}&id=${id}`)
+        .then(response => response.text())
+        .then(result => {
+          alert(result);
+          location.reload();
+        });
+    }
   }
 </script>
 

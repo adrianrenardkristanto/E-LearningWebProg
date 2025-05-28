@@ -114,7 +114,7 @@
         </div>
       </div>
       
-    <a href="course.html" class="back-button">Kembali</a>
+    <a href="course.php" class="back-button">Kembali</a>
     
     <div class="modal" id="enrollModal">
       <div class="modal-content fade">
