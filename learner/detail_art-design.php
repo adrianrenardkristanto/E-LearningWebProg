@@ -22,7 +22,7 @@
         <div class="card" data-lesson="class_art-design/kelas10.html"><div><h2>10. Portofolio dan Presentasi</h2><p>Membuat portofolio desain dan cara menyajikannya secara profesional.</p></div></div>
     </div>
 
-    <!-- <div class="subscription-section" id="subscription">
+    <div class="subscription-section" id="subscription">
         <div class="plan-card">
           <h3>Perbulan</h3>
           <p class="price">Rp250.000 <span>/bulan</span></p>
@@ -113,9 +113,9 @@
           </form>
         </div>
       </div>
-      -->
-    <a href="course.php" class="back-button">Kembali</a> 
-
+      
+    <a href="course.php" class="back-button">Kembali</a>
+  
     <div class="modal" id="enrollModal">
       <div class="modal-content fade">
         <h3>Anda harus mendaftar dulu</h3>

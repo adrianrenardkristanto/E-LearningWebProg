@@ -26,13 +26,13 @@
                 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name = "email" placeholder="Enter your email" required>
+                    <input type="email" id="email" name = "email" placeholder="Enter your email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required >
                     <div id="emailError" class="error-message"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" value="<?php echo isset($_POST['password']) ? htmlspecialchars($_POST['password']) : ''; ?>" required>
                     <div id="passwordError" class="error-message"></div>
                 </div>
 
@@ -49,22 +49,39 @@
         </div>
     </div>
 
-    <?php
+   <?php
         require_once('connection.php');
         session_start();
+
+        // Cek jika pengguna sudah login dan arahkan ke halaman yang sesuai
         if (isset($_SESSION['user_id'])) {
-            header("Location: learner/course.php");
-            exit;
+            // Ambil role pengguna dari session atau database jika perlu
+            $user_id = $_SESSION['user_id'];
+            $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $role = $row['role'];
+                
+                if ($role === 'Learner') {
+                    header("Location: learner/course.php");
+                    exit;
+                } else if ($role === 'Tutor') {
+                    header("Location: tutor/manage_course.php");
+                    exit;
+                } else if ($role === 'Admin') {
+                    header("Location: admin/homeAdmin.php");
+                    exit;
+                }
+            }
         }
-        // echo '<pre>';
-        // print_r($_SESSION);
-        // echo '</pre>';
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST['login'])) {
                 $email = $_POST['email'];
                 $password = $_POST['password'];
-                    
-                $sql = "select * from users where email = '$email'";
+                
+                $sql = "SELECT * FROM users WHERE email = '$email'";
                 $result = $conn->query($sql);
                 if ($result) {
                     if ($result->num_rows > 0) {
@@ -73,16 +90,23 @@
                             $_SESSION['user_id'] = $row['user_id'];
                             setcookie('name', $row['name'], time() + (3600 * 5), "");
                             setcookie('uid', $row['user_id'], time() + (3600 * 5), "");
+
+                            // Arahkan berdasarkan role
                             if ($row['role'] === 'Learner') {
                                 header("Location: learner/course.php");
-                            } else if($row['role'] === 'Tutor'){
-                                header("Location: tutor/manage_course.html");
-                            } else if($row['role'] === 'Admin'){
-                                header("Location: admin/home_admin.html");
-                            } else{
+                            } else if ($row['role'] === 'Tutor') {
+                                if ($row['isVerified'] == 'Unverified') {
+                                    echo "<script>alert('Silahkan tunggu akun Anda terverifikasi!')</script>";
+                                } else if ($row['isVerified'] == 'Confirmed') {
+                                    header("Location: tutor/manage_course.php");
+                                }
+                            } else if ($row['role'] === 'Admin') {
+                                header("Location: admin/homeAdmin.php");
+                            } else {
                                 echo "<script>alert('Role tidak dikenali');</script>";
                             }
-                        } else{                                           
+                            exit; // Pastikan untuk keluar setelah header
+                        } else {                                        
                             echo "<script>alert('Password tidak cocok');</script>";
                         }
                     } else {
@@ -94,55 +118,5 @@
             }
         }
     ?>
-
-    <!-- <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const emailError = document.getElementById('emailError');
-            const passwordError = document.getElementById('passwordError');
-            
-            // Hide previous errors
-            emailError.style.display = 'none';
-            passwordError.style.display = 'none';
-            
-            // Get user database from localStorage
-            const userDatabase = JSON.parse(localStorage.getItem('userDatabase')) || [];
-            
-            // Find user
-            const user = userDatabase.find(u => u.email === email);
-            
-            if (!user) {
-                emailError.textContent = 'Email not registered';
-                emailError.style.display = 'block';
-                return;
-            }
-            
-            if (user.password !== password) {
-                passwordError.textContent = 'Incorrect password';
-                passwordError.style.display = 'block';
-                return;
-            }
-            
-            // Successful login - save to session
-            sessionStorage.setItem('currentUser', JSON.stringify(user));
-            
-            // Redirect based on role
-            switch(user.role) {
-                case 'student':
-                    window.location.href = 'student/dashboard.html';
-                    break;
-                case 'tutor':
-                    window.location.href = 'tutor/dashboard.html';
-                    break;
-                case 'admin':
-                    window.location.href = 'admin/dashboard.html';
-                    break;
-                default:
-                    alert('Invalid user role');
-            }
-        });
-    </script> -->
 </body>
 </html>

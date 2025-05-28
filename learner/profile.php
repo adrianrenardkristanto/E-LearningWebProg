@@ -1,23 +1,31 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+  session_start();
+  if (!isset($_SESSION['user_id'])) {
+      header("Location: login.php");
+      exit();
+  }
 
-include "../connection.php";
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
 
-$user_id = $_SESSION['user_id'];
+  include "../connection.php";
 
-$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+  $user_id = $_SESSION['user_id'];
 
-if (!$user) {
-    die("User tidak ditemukan di database.");
-}
+  if (!$conn) {
+      die("Koneksi gagal: " . mysqli_connect_error());
+  }
+
+  $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
+  $stmt->bind_param("i", $user_id);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $user = $result->fetch_assoc();
+
+  if (!$user) {
+      die("User tidak ditemukan di database.");
+  }
 
 $error = '';
 $success = '';
