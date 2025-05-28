@@ -62,6 +62,7 @@
             FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE ON UPDATE CASCADE
         );";
 
+
         // Tabel users
         $sql .= "CREATE TABLE IF NOT EXISTS users (
             user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,6 +74,7 @@
         );";
 
         // Insert data kategori_modul
+
         $sql .= "INSERT INTO kategori_modul (id, nama, detail_page) VALUES
         (1, 'Art & Design', 'detail_art-design.php'),
         (2, 'Desain Thinking', 'detail_desain-thinking.php'),
