@@ -115,7 +115,7 @@
       </div>
       
     <a href="course.php" class="back-button">Kembali</a>
-    
+  
     <div class="modal" id="enrollModal">
       <div class="modal-content fade">
         <h3>Anda harus mendaftar dulu</h3>
@@ -136,19 +136,15 @@
             const lessonPath = (this.getAttribute('data-lesson'));
               const lessonNumber = parseInt(lessonPath.match(/\d+/)); // ekstrak nomor dari path
 
-              // cek lessonNumber >= 3
               if (lessonNumber >= 3) {
-                // cek udah daftar belum
                 const isEnroll = checkUserEnroll();
                       
                 if (!isEnroll) {
-                  //kalo belum daftar
                   document.getElementById('enrollModal').style.display = 'flex';
                     return;
                   }
                 }
                   
-                // kalau sudah terdaftar atau lesson < 3, langsung masuk ke page yang di klik
                 window.location.href = lessonPath;
             });
         });
@@ -208,7 +204,7 @@
         }
       });
     </script>
-      
+
 
 </body>
 </html>
