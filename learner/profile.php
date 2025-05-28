@@ -251,5 +251,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <a href="course.php">Kembali ke Beranda</a>
     </div>
   </div>
+  
 </body>
 </html>
