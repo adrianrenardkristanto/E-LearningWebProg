@@ -1,7 +1,7 @@
 <?php 
   session_start();
   if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
   }
   include "../connection.php";
@@ -162,139 +162,137 @@
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo">E-Learning</div>
+    <nav class="navbar">
+      <a href="Info.php">Info</a>
+      <a href="Resource.php">Resource</a>
+      <a href="schedule.php">Schedule</a>
+    </nav>
+    <a href="profile.php">
+      <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
+    </a>
+  </header>
 
-<header>
-  <div class="logo">E-Learning</div>
-  <nav class="navbar">
-    <a href="Info.php">Info</a>
-    <a href="Resource.php">Resource</a>
-    <a href="schedule.php">Schedule</a>
-  </nav>
-  <a href="profile.php">
-    <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
-  </a>
-</header>
+  <main>
+    <section class="hero" id="courses">
+      <h1 style="text-align:center; padding: 2rem; color: var(--primary); background: linear-gradient(to right, var(--primary), var(--accent)); color: white;">Mari Belajar di E-Learning</h1>
+    </section>
 
-<main>
-  <section class="hero" id="courses">
-    <h1 style="text-align:center; padding: 2rem; color: var(--primary); background: linear-gradient(to right, var(--primary), var(--accent)); color: white;">Mari Belajar di E-Learning</h1>
-  </section>
+    <section>
+      <h2 class="section-title">Daftar Modul</h2>
+      <div class="section-grid">
+        <?php
+          $modul_result = mysqli_query($conn, "
+            SELECT m.modul_id, m.title, m.description, m.is_premium, k.nama AS kategori_nama, k.detail_page
+            FROM modul m
+            LEFT JOIN kategori_modul k ON m.category_id = k.id
+          ");
+          while ($modul = mysqli_fetch_assoc($modul_result)):
+            $detailFile = $modul['detail_page']; 
+        ?>
+          <a class="grid-card" href="<?= $detailFile ?>?id=<?= $modul['modul_id'] ?>" style="text-decoration: none; color: inherit;">
+            <div class="grid-content">
+              <h3><?= htmlspecialchars($modul['title']) ?></h3>
+              <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
+              <small>
+                Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> | Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
+              </small>
+            </div>
+          </a>
+        <?php endwhile; ?>
+      </div>
+    </section>
 
-  <section>
-    <h2 class="section-title">Daftar Modul</h2>
-    <div class="section-grid">
-      <?php
-        $modul_result = mysqli_query($conn, "
-          SELECT m.modul_id, m.title, m.description, m.is_premium, k.nama AS kategori_nama, k.detail_page
-          FROM modul m
-          LEFT JOIN kategori_modul k ON m.category_id = k.id
-        ");
-        while ($modul = mysqli_fetch_assoc($modul_result)):
-          $detailFile = $modul['detail_page']; 
-      ?>
-        <a class="grid-card" href="<?= $detailFile ?>?id=<?= $modul['modul_id'] ?>" style="text-decoration: none; color: inherit;">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($modul['title']) ?></h3>
-            <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
-            <small>
-              Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> | Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
-            </small>
+    <section>
+      <h2 class="section-title">Video Pembelajaran</h2>
+      <div class="section-grid">
+        <?php
+          $video_result = mysqli_query($conn, "SELECT * FROM video ORDER BY upload_date DESC");
+          while ($video = mysqli_fetch_assoc($video_result)):
+        ?>
+          <div class="grid-card">
+            <div class="grid-content">
+              <h3><?= htmlspecialchars($video['title']) ?></h3>
+              <p><?= nl2br(htmlspecialchars($video['description'])) ?></p>
+              <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
+            </div>
           </div>
-        </a>
-      <?php endwhile; ?>
-    </div>
-  </section>
+        <?php endwhile; ?>
+      </div>
+    </section>
 
-  <section>
-    <h2 class="section-title">Video Pembelajaran</h2>
-    <div class="section-grid">
-      <?php
-        $video_result = mysqli_query($conn, "SELECT * FROM video ORDER BY upload_date DESC");
-        while ($video = mysqli_fetch_assoc($video_result)):
-      ?>
-        <div class="grid-card">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($video['title']) ?></h3>
-            <p><?= nl2br(htmlspecialchars($video['description'])) ?></p>
-            <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
+    <section>
+      <h2 class="section-title">Rekomendasi Buku</h2>
+      <div class="section-grid">
+        <?php
+          $book_result = mysqli_query($conn, "SELECT * FROM book");
+          while ($book = mysqli_fetch_assoc($book_result)):
+        ?>
+          <div class="grid-card">
+            <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku">
+            <div class="grid-content">
+              <h3><?= htmlspecialchars($book['title']) ?></h3>
+              <button class="modal-btn" onclick="showBookModal(
+                '<?= htmlspecialchars(addslashes($book['title'])) ?>',
+                '<?= htmlspecialchars(addslashes($book['author'])) ?>',
+                `<?= nl2br(htmlspecialchars(addslashes($book['description']))) ?>`
+              )">Tentang Buku</button>
+            </div>
           </div>
+        <?php endwhile; ?>
+      </div>
+    </section>
+
+    <div class="modal" id="bookModal">
+      <div class="modal-content">
+        <h3 id="bookTitle">Judul Buku</h3>
+        <p><strong>Penulis:</strong> <span id="bookAuthor"></span></p>
+        <p id="bookDesc"></p>
+        <div class="modal-actions">
+          <button onclick="closeBookModal()">Tutup</button>
         </div>
-      <?php endwhile; ?>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="section-title">Rekomendasi Buku</h2>
-    <div class="section-grid">
-      <?php
-        $book_result = mysqli_query($conn, "SELECT * FROM book");
-        while ($book = mysqli_fetch_assoc($book_result)):
-      ?>
-        <div class="grid-card">
-          <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($book['title']) ?></h3>
-            <button class="modal-btn" onclick="showBookModal(
-              '<?= htmlspecialchars(addslashes($book['title'])) ?>',
-              '<?= htmlspecialchars(addslashes($book['author'])) ?>',
-              `<?= nl2br(htmlspecialchars(addslashes($book['description']))) ?>`
-            )">Tentang Buku</button>
-          </div>
-        </div>
-      <?php endwhile; ?>
-    </div>
-  </section>
-
-  <div class="modal" id="bookModal">
-    <div class="modal-content">
-      <h3 id="bookTitle">Judul Buku</h3>
-      <p><strong>Penulis:</strong> <span id="bookAuthor"></span></p>
-      <p id="bookDesc"></p>
-      <div class="modal-actions">
-        <button onclick="closeBookModal()">Tutup</button>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 
-<footer>
-  <div class="footer-content">
-    <div class="footer-column">
-      <h3>E-Learning</h3>
-      <p>Your gateway to professional development and lifelong learning.</p>
+  <footer>
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>E-Learning</h3>
+        <p>Your gateway to professional development and lifelong learning.</p>
+      </div>
+      <div class="footer-column">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#courses">Courses</a></li>
+          <li><a href="Info.php">About</a></li>
+          <li><a href="Info.php">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Connect</h3>
+        <a href="#">@Facebook</a><br>
+        <a href="#">@Twitter</a><br>
+        <a href="#">@Instagram</a><br>
+        <a href="#">@LinkedIn</a>
+      </div>
     </div>
-    <div class="footer-column">
-      <h3>Quick Links</h3>
-      <ul>
-        <li><a href="#courses">Courses</a></li>
-        <li><a href="Info.php">About</a></li>
-        <li><a href="Info.php">Contact</a></li>
-      </ul>
+    <div style="text-align: center; margin-top: 1rem;">
+      <p>&copy; 2025 E-Learning.</p>
     </div>
-    <div class="footer-column">
-      <h3>Connect</h3>
-      <a href="#">@Facebook</a><br>
-      <a href="#">@Twitter</a><br>
-      <a href="#">@Instagram</a><br>
-      <a href="#">@LinkedIn</a>
-    </div>
-  </div>
-  <div style="text-align: center; margin-top: 1rem;">
-    <p>&copy; 2025 E-Learning.</p>
-  </div>
-</footer>
+  </footer>
 
-<script>
-  function showBookModal(title, author, desc) {
-    document.getElementById('bookTitle').textContent = title;
-    document.getElementById('bookAuthor').textContent = author;
-    document.getElementById('bookDesc').innerHTML = desc;
-    document.getElementById('bookModal').style.display = 'flex';
-  }
-  function closeBookModal() {
-    document.getElementById('bookModal').style.display = 'none';
-  }
-</script>
-
+  <script>
+    function showBookModal(title, author, desc) {
+      document.getElementById('bookTitle').textContent = title;
+      document.getElementById('bookAuthor').textContent = author;
+      document.getElementById('bookDesc').innerHTML = desc;
+      document.getElementById('bookModal').style.display = 'flex';
+    }
+    function closeBookModal() {
+      document.getElementById('bookModal').style.display = 'none';
+    }
+  </script>
 </body>
 </html>

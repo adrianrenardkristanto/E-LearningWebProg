@@ -1,20 +1,28 @@
 <?php
   session_start();
   if (!isset($_SESSION['user_id'])) {
-      header("Location: login.php");
+      header("Location: ../login.php");
       exit();
   }
-  
+
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+
   include "../connection.php";
-  
+
   $user_id = $_SESSION['user_id'];
-  
+
+  if (!$conn) {
+      die("Koneksi gagal: " . mysqli_connect_error());
+  }
+
   $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
   $stmt->bind_param("i", $user_id);
   $stmt->execute();
   $result = $stmt->get_result();
   $user = $result->fetch_assoc();
-  
+
   if (!$user) {
       die("User tidak ditemukan di database.");
   }
@@ -244,13 +252,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </form>
 
     <div class="logout-btn">
-      <a href="../logout.php">Logout</a>
+      <form action="../logout.php" method="post">
+        <button type="submit" name="logout" class="btn">Logout</button>
+      </form>
     </div>
 
     <div class="back-btn">
-      <a href="course.php">Kembali ke Beranda</a>
+      <form action="" method="post">
+        <button type="submit" name="back">Kembali ke beranda</button>
+      </form>
+      <?php
+        $user_id = $_SESSION['user_id'];
+        if (isset($_POST['back'])) {
+            $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $role = $row['role'];
+
+                if ($row['role'] === 'Learner') {
+                    header("Location: course.php");
+                } else if($row['role'] === 'Tutor') {
+                    header("Location: ../tutor/manage_course.php");
+                } else if($row['role'] === 'Admin') {
+                    header("Location: ../admin/homeAdmin.php");
+                }
+            }
+        }
+      ?>
     </div>
   </div>
-  
 </body>
 </html>

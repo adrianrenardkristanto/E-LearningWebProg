@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - E-Learning</title>
+    <nama>Register - E-Learning</nama>
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
@@ -52,9 +52,7 @@
 
                 <div class="form-group"></div>
 
-                <input type="checkbox" name="course[]" id="ddt" value="Digital Design Thinking"> Digital Design Thinking <br>
-                <input type="checkbox" name="course[]" id="wd" value="Web Development"> Web Development <br>
-                <input type="checkbox" name="course[]" id="cad" value="Creative Art Design"> Creative Art Design <br>
+                <div id="course-select-wrapper"></div>
 
                 <button type="submit" class="login-btn" name="register">Register</button>
                 
@@ -65,31 +63,37 @@
         </div>
     </div>
 
-    <!-- <script>
+    <script>
         const learnerRadio = document.getElementById('learner');
         const tutorRadio = document.getElementById('tutor');
         const labelLearner = document.getElementById('label-learner');
         const labelTutor = document.getElementById('label-tutor');
-        const courseSelect = document.getElementById('course-select');
+        const courseWrapper = document.getElementById('course-select-wrapper');
+
+        function getCourseHTML() {
+            return `
+                <input type="checkbox" name="course[]" id="ddt" value="Digital Design Thinking"> Digital Design Thinking <br>
+                <input type="checkbox" name="course[]" id="wd" value="Web Development"> Web Development <br>
+                <input type="checkbox" name="course[]" id="cad" value="Creative Art Design"> Creative Art Design <br>
+            `;
+        }
 
         function updateRoleUI() {
             if (learnerRadio.checked) {
                 labelLearner.style.fontWeight = 'bold';
                 labelTutor.style.fontWeight = 'normal';
-                courseSelect.style.display = 'none';
+                courseWrapper.innerHTML = ''; // kosongkan
             } else if (tutorRadio.checked) {
                 labelTutor.style.fontWeight = 'bold';
                 labelLearner.style.fontWeight = 'normal';
-                courseSelect.style.display = 'block';
+                courseWrapper.innerHTML = getCourseHTML(); // isi ulang
             }
         }
 
         learnerRadio.addEventListener('change', updateRoleUI);
         tutorRadio.addEventListener('change', updateRoleUI);
-
-        // Inisialisasi saat halaman dimuat
-        window.addEventListener('DOMContentLoaded', updateRoleUI);
-    </script> -->
+        window.addEventListener('DOMContentLoaded', updateRoleUI); // kosong saat awal
+    </script>
 
 
     <?php
@@ -107,11 +111,6 @@
                 if ($result) {
                     if ($result->num_rows < 1) {
                         if (strlen($password) >= 8) {
-                            if (empty($course)) {
-                                $role = "Admin"; 
-                            }
-                            
-                            // Ambil tanggal saat ini dalam format Y-m-d
                             $created_at = date("Y-m-d");
 
                             $sql = "INSERT INTO users (name, email, password, role, isVerified, created_at) VALUES ('$name', '$email', '".password_hash($password, PASSWORD_BCRYPT)."', '$role', NULL, '$created_at')";
@@ -136,14 +135,14 @@
                                 if ($result) {
                                     $row = $result->fetch_assoc();
                                     $user_id = $row['user_id'];
-                                    if ($role != "Admin" && isset($course)) { 
+                                    if ($role == "Tutor" && isset($course)) { 
                                         foreach ($course as $course_name) {
-                                            $sql = "SELECT id FROM course WHERE title = '$course_name'";
+                                            $sql = "SELECT id FROM kategori_modul WHERE nama = '$course_name'";
                                             $result = $conn->query($sql);
                                             if ($result) {
                                                 $row = $result->fetch_assoc();
                                                 $course_id = $row['id'];
-                                                $sql = "INSERT INTO user_course (user_id, course_id) VALUES ('$user_id', '$course_id')";
+                                                $sql = "INSERT INTO user_kategori (user_id, kategori_id) VALUES ('$user_id', '$course_id')";
                                                 $conn->query($sql);
                                             }
                                         }

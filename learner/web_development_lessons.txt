@@ -1,0 +1,10 @@
+Pengantar Web Development|Memahami dasar-dasar pengembangan web.|class_web-dev/kelas1.html
+HTML Dasar|Struktur dasar HTML dan elemen penting.|class_web-dev/kelas2.html
+CSS untuk Styling|Menggunakan CSS untuk desain web.|class_web-dev/kelas3.html
+JavaScript Dasar|Dasar-dasar interaktivitas dengan JavaScript.|class_web-dev/kelas4.html
+Framework CSS|Bootstrap dan Tailwind CSS.|class_web-dev/kelas1.html
+Responsive Design|Menyesuaikan tampilan web untuk perangkat berbeda.|class_web-dev/kelas2.html
+Git dan Version Control|Mengelola proyek dengan Git.|class_web-dev/kelas3.html
+Frontend Frameworks|Pengenalan React, Vue, dan Angular.|class_web-dev/kelas4.html
+Backend Development|Konsep dasar backend menggunakan Node.js atau PHP.|class_web-dev/kelas1.html
+RESTful API|Menggunakan dan membuat API untuk aplikasi web.|class_web-dev/kelas2.html
