@@ -1,0 +1,10 @@
+Pengenalan Design Thinking|Memahami konsep dasar dan manfaat design thinking dalam dunia digital.|class_desain-thinking/kelas1.html
+Empathize|Mengenal kebutuhan dan sudut pandang pengguna melalui observasi dan wawancara.|class_desain-thinking/kelas2.html
+Define|Menentukan masalah yang tepat berdasarkan pemahaman pengguna.|class_desain-thinking/kelas3.html
+Ideate|Teknik brainstorming untuk menghasilkan solusi kreatif.|class_desain-thinking/kelas4.html
+Prototype|Membuat representasi awal dari solusi untuk diuji coba.|class_desain-thinking/kelas1.html
+Test|Menguji prototype kepada pengguna untuk mendapat masukan.|class_desain-thinking/kelas2.html
+Iterasi dalam Design Thinking|Proses berulang untuk memperbaiki solusi berdasarkan feedback.|class_desain-thinking/kelas3.html
+Design Thinking untuk Produk Digital|Mengaplikasikan metode design thinking dalam pengembangan produk digital.|class_desain-thinking/kelas4.html
+Kolaborasi Tim dan Stakeholder|Pentingnya kerja tim dan komunikasi dalam proses desain.|class_desain-thinking/kelas1.html
+Studi Kasus & Presentasi|Menyajikan hasil proyek design thinking dalam bentuk studi kasus nyata.|class_desain-thinking/kelas2.html

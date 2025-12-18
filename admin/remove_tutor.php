@@ -14,28 +14,6 @@
             header("Location: ../login.php");
             exit;
         }
-
-        $user_id = $_SESSION['user_id'];
-        $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $role = $row['role'];
-
-            if ($row['role'] === 'Learner') {
-                header("Location: ../learner/course.php");
-            }else if ($row['role'] === 'Tutor') {
-                header("Location: ../tutor/manage_course.php");
-            }
-        } else {
-            header("Location: ../login.php");
-            exit;
-        }
-
-        // Mencegah caching
-        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-        header("Cache-Control: post-check=0, pre-check=0", false);
-        header("Pragma: no-cache");
     ?>
 
     <header>
@@ -45,7 +23,7 @@
                 <div>
                     <a href="verify_tutor.php">Verifikasi Tutor</a>
                     <a href="remove_tutor.php">Hapus Tutor</a>
-                    <a href="verify_trans.html">Verifikasi Transaksi</a>
+                    <a href="verify_trans.php">Verifikasi Transaksi</a>
                 </div>
             </nav>
             <form action="../logout.php" method="post">

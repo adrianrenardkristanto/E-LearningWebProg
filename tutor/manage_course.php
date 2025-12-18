@@ -1,10 +1,31 @@
 <?php 
-  session_start();
-  if (!isset($_SESSION['user_id'])) {
+session_start();
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit();
-  }
-  include "../connection.php";
+}
+include "../connection.php";
+
+// Ambil kategori yang diajarkan oleh tutor
+$user_id = $_SESSION['user_id'];
+$kategori_result = mysqli_query($conn, "
+    SELECT kategori_id 
+    FROM user_kategori 
+    WHERE user_id = '$user_id'
+");
+$kategori_ids = [];
+while ($row = mysqli_fetch_assoc($kategori_result)) {
+    $kategori_ids[] = $row['kategori_id'];
+}
+
+// Jika tidak ada kategori, tampilkan pesan
+if (empty($kategori_ids)) {
+    echo "<p>Tutor ini belum mengajarkan kategori apapun.</p>";
+    exit();
+}
+
+// Buat string untuk kategori_ids
+$kategori_ids_str = implode(',', $kategori_ids);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -14,13 +35,11 @@
   <title>Manage Courses - E-Learning Platform</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <style>
-    /* Styles for the page */
-    :root {
+   :root {
       --primary: #2C3E50;
       --accent: #18BC9C;
       --light-bg: #ECF0F1;
       --white: #FFFFFF;
-      --gray: #BDC3C7;
       --dark: #2C3E50;
     }
 
@@ -52,9 +71,6 @@
       color: var(--white);
       font-weight: 500;
     }
-    .navbar a:hover {
-      color: var(--accent);
-    }
 
     .section-grid {
       display: grid;
@@ -67,24 +83,15 @@
       background: var(--white);
       border-radius: 12px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-      transition: all 0.3s ease;
       overflow: hidden;
-    }
-
-    .grid-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-      background: #f9f9f9;
+      padding: 1rem;
+      max-width: 350px;
     }
 
     .grid-card img {
       width: 100%;
       height: 160px;
       object-fit: cover;
-    }
-
-    .grid-content {
-      padding: 1rem;
     }
 
     .section-title {
@@ -94,52 +101,8 @@
       margin-top: 2rem;
     }
 
-    iframe {
-      border-radius: 10px;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-
-    .modal-content {
-      background: var(--white);
-      padding: 2rem;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    }
-
-    .modal-content h3 {
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-
-    .modal-actions button {
-      background: var(--accent);
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 8px;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-
-    .blur {
-      filter: blur(5px);
-    }
-
-    .action-buttons {
-      display: flex;
-      justify-content: flex-end;
+    .action-buttons form {
+      display: inline-block;
       margin-top: 1rem;
     }
 
@@ -150,180 +113,283 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      margin-left: 0.5rem;
+      margin-right: 0.5rem;
     }
 
     .delete-btn {
       background-color: #e74c3c;
     }
+
+    /* Modal styling */
+    #modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #modal-content {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo">E-Learning</div>
+    <a href="../learner/profile.php">
+      <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
+    </a>
+  </header>
 
-<header>
-  <div class="logo">E-Learning</div>
-  <nav class="navbar">
-    <a href="Info.php">Info</a>
-    <a href="Resource.php">Resource</a>
-    <a href="manage_course.php">Manage Courses</a>
-  </nav>
-  <a href="profile.php">
-    <img src="../img/profile.jpg" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
-  </a>
-</header>
+  <main>
+    <section>
+      <h1 class="section-title">Manage Courses</h1>
+    </section>
 
-<main>
-  <section class="hero" id="courses">
-    <h1 style="text-align:center; padding: 2rem; color: var(--primary); background: linear-gradient(to right, var(--primary), var(--accent)); color: white;">Manage Courses</h1>
-  </section>
-
-  <section>
-    <h2 class="section-title">Daftar Modul</h2>
-    <div class="section-grid">
-      <?php
-        $modul_result = mysqli_query($conn, "
-          SELECT m.modul_id, m.title, m.description, m.is_premium, k.nama AS kategori_nama, k.detail_page
-          FROM modul m
-          LEFT JOIN kategori_modul k ON m.category_id = k.id
-        ");
-        while ($modul = mysqli_fetch_assoc($modul_result)):
-          $detailFile = $modul['detail_page']; 
-      ?>
+    <!-- Modul -->
+    <section>
+      <h2 class="section-title">Daftar Modul</h2>
+      <div class="section-grid">
+        <?php
+          $modul_result = mysqli_query($conn, "
+            SELECT m.modul_id, m.title, m.description, m.is_premium, k.nama AS kategori_nama
+            FROM modul m
+            LEFT JOIN kategori_modul k ON m.category_id = k.id
+            WHERE m.category_id IN ($kategori_ids_str)
+          ");
+          while ($modul = mysqli_fetch_assoc($modul_result)):
+        ?>
         <div class="grid-card">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($modul['title']) ?></h3>
-            <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
-            <small>
-              Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> | Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?>
-            </small>
-            <div class="action-buttons">
-              <button class="edit-btn" onclick="showEditModal(<?= $modul['modul_id'] ?>, 'modul')">Edit</button>
-              <button class="delete-btn" onclick="deleteItem(<?= $modul['modul_id'] ?>, 'modul')">Hapus</button>
-            </div>
+          <h3><?= htmlspecialchars($modul['title']) ?></h3>
+          <p><?= nl2br(htmlspecialchars($modul['description'])) ?></p>
+          <small>Kategori: <?= htmlspecialchars($modul['kategori_nama']) ?> | Premium: <?= $modul['is_premium'] ? 'Ya' : 'Tidak' ?></small>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="openEditModal('<?= $modul['modul_id'] ?>', 'modul')">Edit</button>
+            <form action="delete_course.php" method="get" onsubmit="return confirm('Yakin ingin menghapus modul ini?');">
+              <input type="hidden" name="id" value="<?= $modul['modul_id'] ?>">
+              <input type="hidden" name="type" value="modul">
+              <button type="submit" class="delete-btn">Hapus</button>
+            </form>
           </div>
         </div>
-      <?php endwhile; ?>
-    </div>
-  </section>
+        <?php endwhile; ?>
+      </div>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <button class="edit-btn" onclick="openAddModal('modul')">+ Tambah Modul</button>
+      </div>
+    </section>
 
-  <section>
-    <h2 class="section-title">Video Pembelajaran</h2>
-    <div class="section-grid">
-      <?php
-        $video_result = mysqli_query($conn, "SELECT * FROM video ORDER BY upload_date DESC");
-        while ($video = mysqli_fetch_assoc($video_result)):
-      ?>
+    <!-- Video -->
+    <section>
+      <h2 class="section-title">Video Pembelajaran</h2>
+      <div class="section-grid">
+        <?php
+          $video_result = mysqli_query($conn, "
+            SELECT v.video_id, v.title, v.description, v.url
+            FROM video v
+            JOIN modul m ON v.modul_id = m.modul_id
+            WHERE m.category_id IN ($kategori_ids_str)
+            ORDER BY v.upload_date DESC
+          ");
+          while ($video = mysqli_fetch_assoc($video_result)):
+        ?>
         <div class="grid-card">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($video['title']) ?></h3>
-            <p><?= nl2br(htmlspecialchars($video['description'])) ?></p>
-            <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
-            <div class="action-buttons">
-              <button class="edit-btn" onclick="showEditModal(<?= $video['id'] ?>, 'video')">Edit</button>
-              <button class="delete-btn" onclick="deleteItem(<?= $video['id'] ?>, 'video')">Hapus</button>
-            </div>
+          <h3><?= htmlspecialchars($video['title']) ?></h3>
+          <p><?= nl2br(htmlspecialchars($video['description'])) ?></p>
+          <iframe width="100%" height="180" src="<?= htmlspecialchars($video['url']) ?>" frameborder="0" allowfullscreen></iframe>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="openEditModal('<?= $video['video_id'] ?>', 'video')">Edit</button>
+            <form action="delete_course.php" method="get" onsubmit="return confirm('Yakin ingin menghapus video ini?');">
+              <input type="hidden" name="id" value="<?= $video['video_id'] ?>">
+              <input type="hidden" name="type" value="video">
+              <button type="submit" class="delete-btn">Hapus</button>
+            </form>
           </div>
         </div>
-      <?php endwhile; ?>
-    </div>
-  </section>
+        <?php endwhile; ?>
+      </div>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <button class="edit-btn" onclick="openAddModal('video')">+ Tambah Video</button>
+      </div>
+    </section>
 
-  <section>
-    <h2 class="section-title">Rekomendasi Buku</h2>
-    <div class="section-grid">
-      <?php
-        $book_result = mysqli_query($conn, "SELECT * FROM book");
-        while ($book = mysqli_fetch_assoc($book_result)):
-      ?>
+    <!-- Book -->
+    <section>
+      <h2 class="section-title">Rekomendasi Buku</h2>
+      <div class="section-grid">
+        <?php
+          $book_result = mysqli_query($conn, "
+            SELECT b.book_id, b.title, b.cover, b.modul_id
+            FROM book b
+            JOIN modul m ON b.modul_id = m.modul_id
+            WHERE m.category_id IN ($kategori_ids_str)
+          ");
+          while ($book = mysqli_fetch_assoc($book_result)):
+        ?>
         <div class="grid-card">
           <img src="../img/<?= htmlspecialchars($book['cover']) ?>" alt="Cover Buku">
-          <div class="grid-content">
-            <h3><?= htmlspecialchars($book['title']) ?></h3>
-            <div class="action-buttons">
-              <button class="edit-btn" onclick="showEditModal(<?= $book['id'] ?>, 'book')">Edit</button>
-              <button class="delete-btn" onclick="deleteItem(<?= $book['id'] ?>, 'book')">Hapus</button>
-            </div>
+          <h3><?= htmlspecialchars($book['title']) ?></h3>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="openEditModal('<?= $book['book_id'] ?>', 'book')">Edit</button>
+            <form action="delete_course.php" method="get" onsubmit="return confirm('Yakin ingin menghapus buku ini?');">
+              <input type="hidden" name="id" value="<?= $book['book_id'] ?>">
+              <input type="hidden" name="type" value="book">
+              <button type="submit" class="delete-btn">Hapus</button>
+            </form>
           </div>
         </div>
-      <?php endwhile; ?>
+        <?php endwhile; ?>
+      </div>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <button class="edit-btn" onclick="openAddModal('book')">+ Tambah Buku</button>
+      </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="modal-overlay">
+      <div id="modal-content"></div>
     </div>
-  </section>
+  </main>
 
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <h3>Edit Item</h3>
-      <form id="editForm">
-        <input type="hidden" id="itemId" data-type="">
-        <div class="form-group">
-          <label for="itemTitle">Judul</label>
-          <input type="text" id="itemTitle" name="title" required>
-        </div>
-        <div class="form-group">
-          <label for="itemDescription">Deskripsi</label>
-          <textarea id="itemDescription" name="description" required></textarea>
-        </div>
-        <div class="modal-actions">
-          <button type="button" onclick="updateItem()">Simpan</button>
-          <button type="button" onclick="closeEditModal()">Batal</button>
-        </div>
-      </form>
+  <footer>
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>E-Learning</h3>
+        <p>Your gateway to professional development and lifelong learning.</p>
+      </div>
+      <div class="footer-column">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#courses">Courses</a></li>
+          <li><a href="Info.php">About</a></li>
+          <li><a href="Info.php">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Connect</h3>
+        <a href="#">@Facebook</a><br>
+        <a href="#">@Twitter</a><br>
+        <a href="#">@Instagram</a><br>
+        <a href="#">@LinkedIn</a>
+      </div>
     </div>
-  </div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <p>&copy; 2025 E-Learning.</p>
+    </div>
+  </footer>          
 
-</main>
+  <!-- Script -->
+  <script>
+     function openEditModal(id, type) {
+      fetch(`update_course.php?id=${id}&type=${type}`)
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('modal-content').innerHTML = html;
+          document.getElementById('modal-overlay').style.display = 'flex';
 
-<script>
-  function showEditModal(id, type) {
-    document.getElementById('editModal').style.display = 'block';
-    document.body.classList.add('blur');
-    document.getElementById('itemId').value = id;
-    document.getElementById('itemId').setAttribute('data-type', type);
-
-    // Fetch data for the selected item
-    fetch(`ajax_handler.php?action=get_item&id=${id}&type=${type}`)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('itemTitle').value = data.title;
-        document.getElementById('itemDescription').value = data.description;
-      });
-  }
-
-  function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-    document.body.classList.remove('blur');
-  }
-
-  function updateItem() {
-    const id = document.getElementById('itemId').value;
-    const type = document.getElementById('itemId').getAttribute('data-type');
-    const title = document.getElementById('itemTitle').value;
-    const description = document.getElementById('itemDescription').value;
-
-    fetch(`ajax_handler.php?action=update_item&id=${id}&type=${type}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ title, description })
-    })
-    .then(response => response.text())
-    .then(result => {
-      alert(result);
-      location.reload();
-    });
-  }
-
-  function deleteItem(id, type) {
-    if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-      fetch(`ajax_handler.php?action=delete_item&id=${id}&type=${type}`)
-        .then(response => response.text())
-        .then(result => {
-          alert(result);
-          location.reload();
+          const form = document.querySelector('#modal-content form');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              e.preventDefault();
+              const formData = new FormData(form);
+              fetch(`update_course.php?id=${id}&type=${type}`, {
+                method: 'POST',
+                body: formData
+              }).then(res => res.text())
+                .then(response => {
+                  if (response.trim() === 'success') {
+                    alert("Data berhasil diperbarui.");
+                    closeModal();
+                    location.reload();
+                  } else {
+                    alert("Gagal memperbarui: " + response);
+                  }
+                });
+            });
+          }
         });
     }
-  }
-</script>
 
+    function openAddModal(type) {
+      fetch(`create_course.php?type=${type}`)
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('modal-content').innerHTML = html;
+          document.getElementById('modal-overlay').style.display = 'flex';
+
+          const form = document.querySelector('#modal-content form');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              e.preventDefault();
+              const formData = new FormData(form);
+              fetch(`create_course.php?type=${type}`, {
+                method: 'POST',
+                body: formData
+              }).then(res => res.text())
+                .then(response => {
+                  if (response.trim() === 'success') {
+                    alert("Berhasil menambahkan data.");
+                    closeModal();
+                    location.reload();
+                  } else {
+                    alert("Gagal menambahkan: " + response);
+                  }
+                });
+            });
+          }
+        });
+    }
+    
+    function openAddModal(type) {
+      fetch(`create_course.php?type=${type}`)
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('modal-content').innerHTML = html;
+          document.getElementById('modal-overlay').style.display = 'flex';
+
+          const form = document.querySelector('#modal-content form');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              e.preventDefault();
+              const formData = new FormData(form);
+              fetch(`create_course.php?type=${type}`, {
+                method: 'POST',
+                body: formData
+              }).then(res => res.text())
+                .then(response => {
+                  if (response.trim() === 'success') {
+                    alert("Berhasil menambahkan data.");
+                    closeModal();
+                    location.reload();
+                  } else {
+                    alert("Gagal menambahkan: " + response);
+                  }
+                });
+            });
+          }
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').style.display = 'none';
+      document.getElementById('modal-content').innerHTML = '';
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      if (e.target.id === 'modal-overlay') {
+        closeModal();
+      }
+    });
+  </script>
 </body>
 </html>

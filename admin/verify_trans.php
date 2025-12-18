@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Verify Tutor</title>
+    <title>Verify Transaction</title>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
@@ -26,39 +26,40 @@
                     <a href="verify_trans.php">Verifikasi Transaksi</a>
                 </div>
             </nav>
-            <form action="../logout.php" method="post">
-                <button class="login-btn" name = "logout">Logout</button>
-            </form>
+            <button class="login-btn" onclick="window.location.href='../logout.php'">Logout</button>
         </div>
     </header>
 
     <main>
-        <h2 class="section-title">Verifikasi Tutor Baru</h2>
+        <h2 class="section-title">Verifikasi Transaksi</h2>
 
-        <div class="tutor-list">
+        <div class="trans-list">
             <?php
                 require_once "../connection.php";
 
-                $sql = "SELECT * FROM users WHERE role = 'Tutor' AND isVerified = 'Unverified'";
+                $sql = "SELECT * FROM transaksi WHERE is_verified = 'Unverified'";
                 $result = $conn->query($sql);
                 if ($result && $result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
-                        echo '<div class="tutor-card orange">';
-                        echo '<div class="tutor-content">';
-                        echo '<h3>' . htmlspecialchars($row['name']) . '</h3>';
-                        echo '<p class="tutor-email">Email: ' . htmlspecialchars($row['email']) . '</p>';
-                        echo '<div class="tutor-info">';
-                        echo '<span><div class="icon icon-time"></div> Bergabung: ' . date('M Y', strtotime($row['created_at'])) . '</span>';
+                        $user_id = "SELECT * FROM users WHERE user_id = '" . $row['user_id'] . "'";
+                        $user_result = $conn->query($user_id);
+                        $user_row = $user_result->fetch_assoc();
+                        echo '<div class="trans-card green">';
+                        echo '<div class="trans-content">';
+                        echo '<h3>Transaksi ' . htmlspecialchars($row['transaction_id']) . '</h3>';
+                        echo '<p class="newLearner">Pembayaran oleh: ' . htmlspecialchars($user_row['name']) . '</p>';
+                        echo '<div class="trans-info">';
+                        echo '<span><div class="icon icon-time"></div> ' . date('d M Y H:i:s', strtotime($row['created_at'])) . '</span>';
                         echo '</div>';
                         echo '<form action="" method="post">';
-                        echo '<input type="hidden" name="id_tutor" value="' . htmlspecialchars($row['user_id']) . '">';
-                        echo '<button class="enroll-btn" name="verify_tutor">Verifikasi</button>';
+                        echo '<input type="hidden" name="transaction_id" value="' . htmlspecialchars($row['transaction_id']) . '">';
+                        echo '<button class="enroll-btn" name="verify_trans">Verifikasi</button>';
                         echo '</form>';
                         echo '</div>';
                         echo '</div>';
                     }
                 } else {
-                    echo '<p>Tidak ada tutor yang perlu diverifikasi!</p>';
+                    echo '<p>Tidak ada transaksi yang perlu diverifikasi!</p>';
                 }
             ?>
         </div>
@@ -88,16 +89,14 @@
 
     <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (isset($_POST['verify_tutor'])) {
-                $id_tutor = $_POST['id_tutor'];
-    
-                // Update status tutor menjadi verified
-                $update_sql = "UPDATE users SET isVerified = 'Verified' WHERE user_id = '$id_tutor'";
+            if (isset($_POST['verify_trans'])) {
+                $transaction_id = $_POST['transaction_id'];
+                $update_sql = "UPDATE transaksi SET is_verified = 'Verified' WHERE transaction_id = '$transaction_id'";
                 if ($conn->query($update_sql) === TRUE) {
-                    echo "<script>alert('Tutor berhasil diverifikasi!');</script>";
-                    echo "<script>window.location.href='verify_tutor.php';</script>";
+                    echo "<script>alert('Verifikasi berhasil diverifikasi!');</script>";
+                    echo "<script>window.location.href='verify_trans.php';</script>";
                 } else {
-                    echo "<script>alert('Gagal memverifikasi tutor: " . $conn->error . "');</script>";
+                    echo "<script>alert('Gagal memverifikasi transaksi: " . $conn->error . "');</script>";
                 }
             }
         }

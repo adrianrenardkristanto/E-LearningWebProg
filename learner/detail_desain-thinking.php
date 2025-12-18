@@ -1,212 +1,216 @@
+<?php
+session_start();
+include '../connection.php';
+
+$isEnrolled = false;
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $check = $conn->prepare("SELECT * FROM transaksi WHERE user_id = ? AND is_verified = 'Verified'");
+    $check->bind_param("i", $user_id);
+    $check->execute();
+    $result = $check->get_result();
+    $isEnrolled = $result->num_rows > 0;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Desain Thinking</title>
-    <link rel="stylesheet" href="../css/detail_course.css">
-    <link rel="stylesheet" href="../css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Desain Thinking</title>
+  <link rel="stylesheet" href="../css/detail_course.css" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    .modal-form {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(5px);
+      background-color: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .modal-box h3 {
+      margin-top: 0;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <header class="header">Digital Desain Thinking</header>
-    <div class="container">
-        <div class="card" data-lesson="class_desain-thinking/kelas1.html"><div><h2>1. Pengenalan Design Thinking</h2><p>Memahami konsep dasar dan manfaat design thinking dalam dunia digital.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas2.html"><div><h2>2. Empathize</h2><p>Mengenal kebutuhan dan sudut pandang pengguna melalui observasi dan wawancara.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas3.html"><div><h2>3. Define</h2><p>Menentukan masalah yang tepat berdasarkan pemahaman pengguna.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas4.html"><div><h2>4. Ideate</h2><p>Teknik brainstorming untuk menghasilkan solusi kreatif.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas5.html"><div><h2>5. Prototype</h2><p>Membuat representasi awal dari solusi untuk diuji coba.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas6.html"><div><h2>6. Test</h2><p>Menguji prototype kepada pengguna untuk mendapat masukan.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas7.html"><div><h2>7. Iterasi dalam Design Thinking</h2><p>Proses berulang untuk memperbaiki solusi berdasarkan feedback.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas8.html"><div><h2>8. Design Thinking untuk Produk Digital</h2><p>Mengaplikasikan metode design thinking dalam pengembangan produk digital.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas9.html"><div><h2>9. Kolaborasi Tim dan Stakeholder</h2><p>Pentingnya kerja tim dan komunikasi dalam proses desain.</p></div></div>
-        <div class="card" data-lesson="class_desain-thinking/kelas10.html"><div><h2>10. Studi Kasus & Presentasi</h2><p>Menyajikan hasil proyek design thinking dalam bentuk studi kasus nyata.</p></div></div>
-    </div>
+  <header class="header">Digital Desain Thinking</header>
 
+  <div class="container">
+    <?php
+      $filename = "design_thinking_lessons.txt";
+      if (file_exists($filename) && is_readable($filename)) {
+          $handle = fopen($filename, "r");
+          if ($handle) {
+              $i = 1;
+              while (($line = fgets($handle)) !== false) {
+                  $line = trim($line);
+                  if (empty($line)) continue;
+
+                  $parts = explode('|', $line);
+                  if (count($parts) !== 3) continue;
+
+                  $title = htmlspecialchars(trim($parts[0]));
+                  $description = htmlspecialchars(trim($parts[1]));
+                  $link = htmlspecialchars(trim($parts[2]));
+
+                  $canAccess = $i <= 2 || $isEnrolled;
+                  echo '
+                  <div class="card" data-lesson="' . $link . '" data-index="' . $i . '" data-access="' . ($canAccess ? '1' : '0') . '">
+                    <div>
+                      <h2>' . $i . '. ' . $title . '</h2>
+                      <p>' . $description . '</p>
+                    </div>
+                  </div>';
+                  $i++;
+              }
+              fclose($handle);
+          }
+      }
+    ?>
+  </div>
+
+  <!-- Langganan -->
+  <?php if (!isset($_SESSION['user_id']) || !$isEnrolled): ?>
     <div class="subscription-section" id="subscription">
-        <div class="plan-card">
-          <h3>Perbulan</h3>
-          <p class="price">Rp250.000 <span>/bulan</span></p>
-          <p class="sub-price">Belajar tanpa batas dengan berlangganan selama sebulan</p>
-          <p><strong>banyak keuntungan yang didapat</strong></p>
-      
-          <ul class="benefits">
-            <li>- Akses materi tanpa batas</li>
-            <li>- Materi Berkualitas</li>
-            <li>- Diskusi dengan tutor</li>
-            <li>- Sertifikat</li>
-          </ul>
-      
-          <div class="button-group">
-            <button class="buy">Berlangganan</button>
-          </div>
+      <div class="plan-card">
+        <h3>Perbulan</h3>
+        <p class="price">Rp250.000 <span>/bulan</span></p>
+        <div class="button-group">
+          <button class="buy" data-price="250000">Berlangganan</button>
         </div>
-      
-        <div class="plan-card">
-          <h3>Pertahun</h3>
-          <p class="price">Rp900.000 <span>/tahun</span></p>
-          <p class="sub-price">Belajar tanpa batas selama 1 tahun</p>
-          <p><strong>banyak keuntungan yang didapat</strong></p>
-      
-          <ul class="benefits">
-            <li>- Harga lebih murah</li>
-            <li>- Materi berkualitas</li>
-            <li>- Akses materi tampa batas</li>
-            <li>- Diskusi dengan tutor</li>
-            <li>- Sertifikat</li>
-          </ul>
-      
-          <div class="button-group">
-            <button class="buy">Berlangganan</button>
-          </div>
-        </div>      
-      
-      <div id="paymentModal" class="modal">
-        <div class="modal-content">
-          <form id="paymentForm">
-            <h3>Form Pembayaran</h3>
-      
-            <div class="form-group">
-              <label for="nama">Nama Lengkap:</label>
-              <input type="text" id="nama" required />
-            </div>
-      
-            <div class="form-group">
-              <label for="email">Email:</label>
-              <input type="email" id="email" required />
-            </div>
-      
-            <div class="form-group">
-              <label for="hp">Nomor HP :</label>
-              <input type="text" id="hp" required />
-            </div>
-      
-            <div class="form-group">
-              <label for="nominal">Nominal Dibayarkan:</label>
-              <input type="text" id="nominal" readonly />
-            </div>
-      
-            <div class="form-group">
-              <label for="metode">Metode Pembayaran:</label>
-              <select id="metode" required>
-                <option value="">Pilih Pembayaran</option>
-                <option value="transfer">Transfer Bank</option>
-                <option value="ewallet">Gopay</option>
-                <option value="ewallet">Shopee Pay</option>
-                <option value="ewallet">Paypal</option>
-              </select>
-            </div>
-      
-            <div class="form-group">
-              <label for="voucher">Voucher Diskon:</label>
-              <input type="text" id="voucher" />
-            </div>
-      
-            <div class="form-group checkbox">
-              <input type="checkbox" id="confirm">
-               Saya mengisi data dengan benar
-            </div>
-      
-            <div class="form-actions">
-              <button type="submit" id="bayarBtn" disabled>Bayar Sekarang</button>
-              <button type="button" id="closeModal">Tutup</button>
-            </div>
-          </form>
+      </div>
+      <div class="plan-card">
+        <h3>Pertahun</h3>
+        <p class="price">Rp900.000 <span>/tahun</span></p>
+        <div class="button-group">
+          <button class="buy" data-price="900000">Berlangganan</button>
         </div>
+      </div>
     </div>
+  <?php endif; ?>
 
-    <a href="course.php" class="back-button">Kembali</a>
-    
-    <div class="modal" id="enrollModal">
-        <div class="modal-content fade">
-          <h3>Anda harus mendaftar dulu</h3>
-          <p>Untuk mengakses materi ini, silakan daftar terlebih dahulu.</p>
-          <div class="modal-actions">
-            <button onclick="document.getElementById('subscription').scrollIntoView({ behavior: 'smooth' }); document.getElementById('enrollModal').style.display = 'none';">Daftar Sekarang</button>
-            <button onclick="document.getElementById('enrollModal').style.display = 'none'">Nanti Saja</button>
-          </div>
-        </div>
+  <!-- Modal Akses Ditolak -->
+  <div class="modal" id="enrollModal">
+    <div class="modal-content fade">
+      <h3>Akses Ditolak</h3>
+      <p>Anda harus memiliki transaksi yang sudah diverifikasi untuk mengakses materi ini.</p>
+      <div class="modal-actions">
+        <button onclick="document.getElementById('enrollModal').style.display='none'">OK</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.card');
-            
-            cards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const lessonPath = (this.getAttribute('data-lesson'));
-                    const lessonNumber = parseInt(lessonPath.match(/\d+/)); // ekstrak nomor dari path
+  <!-- Modal Form Pembayaran -->
+  <div class="modal-form" id="formModal">
+    <div class="modal-box">
+      <span class="close-btn" onclick="document.getElementById('formModal').style.display='none'">&times;</span>
+      <h3>Form Pembayaran</h3>
+      <form id="paymentForm">
+        <input type="text" id="priceValue" name="price" readonly />
+        <div class="modal-actions">
+          <button type="submit">Bayar Sekarang</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-                    // cek lessonNumber >= 3
-                    if (lessonNumber >= 3) {
-                        // cek udah daftar belum
-                        const isEnroll = checkUserEnroll();
-                        
-                        if (!isEnroll) {
-                            //kalo belum daftar
-                            document.getElementById('enrollModal').style.display = 'flex';
-                            return;
-                        }
-                    }
-                    
-                    // kalau sudah terdaftar atau lesson < 3, langsung masuk ke page yang di klik
-                    window.location.href = lessonPath;
-                });
-            });
-            
-            // cek status daftar user
-            function checkUserEnroll() {                
-                // false = belum daftar
-                return false;
-            }
+  <a href="course.php" class="back-button">Kembali</a>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Akses materi
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+          const access = card.getAttribute('data-access');
+          const path = card.getAttribute('data-lesson');
+
+          if (access === '1') {
+            window.location.href = path;
+          } else {
+            document.getElementById('enrollModal').style.display = 'flex';
+          }
         });
-        
-    //pembayaran
-    const buyButtons = document.querySelectorAll('.buy');
-    const modal = document.getElementById('paymentModal');
-    const form = document.getElementById('paymentForm');
-    const nominalInput = document.getElementById('nominal');
-    const bayarBtn = document.getElementById('bayarBtn');
-    const confirmCheckbox = document.getElementById('confirm');
-    const closeModal = document.getElementById('closeModal');
-    
-    const prices = [
-      "Rp250.000", // perbulan
-      "Rp900.000", // pertahun
-    ];
-  
-    buyButtons.forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        modal.style.display = 'flex';
-        nominalInput.value = prices[i];
+      });
+
+      // Modal bayar (form)
+      const formModal = document.getElementById('formModal');
+      const form = document.getElementById('paymentForm');
+      const priceInput = document.getElementById('priceValue');
+
+      document.querySelectorAll('.buy').forEach(button => {
+        button.addEventListener('click', () => {
+          const price = button.getAttribute('data-price');
+          priceInput.value = price;
+          formModal.style.display = 'flex';
+        });
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("price", priceInput.value);
+
+        const response = await fetch('transaksi.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert("Transaksi berhasil, menunggu verifikasi admin.");
+          formModal.style.display = 'none';
+        } else {
+          alert("Transaksi gagal: " + result.message);
+        }
+      });
+
+      // Klik luar modal
+      window.addEventListener('click', (e) => {
+        if (e.target === formModal) {
+          formModal.style.display = 'none';
+        }
       });
     });
-    
-    confirmCheckbox.addEventListener('change', () => {
-      bayarBtn.disabled = !confirmCheckbox.checked;
-    });
-  
-    closeModal.addEventListener('click', () => {
-      modal.style.display = 'none';
-      form.reset();
-      bayarBtn.disabled = true;
-    });
-  
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      alert('Terima kasih! Data Anda berhasil dikirim.');
-      modal.style.display = 'none';
-      form.reset();
-      bayarBtn.disabled = true;
-    });
-  
-    // Tutup modal saat klik di luar form
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        form.reset();
-        bayarBtn.disabled = true;
-      }
-    });
-    </script>
+  </script>
 </body>
 </html>

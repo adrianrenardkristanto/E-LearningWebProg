@@ -1,7 +1,7 @@
 <?php
   session_start();
   if (!isset($_SESSION['user_id'])) {
-      header("Location: login.php");
+      header("Location: ../login.php");
       exit();
   }
 
@@ -252,13 +252,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </form>
 
     <div class="logout-btn">
-      <a href="../logout.php">Logout</a>
+      <form action="../logout.php" method="post">
+        <button type="submit" name="logout" class="btn">Logout</button>
+      </form>
     </div>
 
     <div class="back-btn">
-      <a href="course.php">Kembali ke Beranda</a>
+      <form action="" method="post">
+        <button type="submit" name="back">Kembali ke beranda</button>
+      </form>
+      <?php
+        $user_id = $_SESSION['user_id'];
+        if (isset($_POST['back'])) {
+            $sql = "SELECT role FROM users WHERE user_id = '$user_id'";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $role = $row['role'];
+
+                if ($row['role'] === 'Learner') {
+                    header("Location: course.php");
+                } else if($row['role'] === 'Tutor') {
+                    header("Location: ../tutor/manage_course.php");
+                } else if($row['role'] === 'Admin') {
+                    header("Location: ../admin/homeAdmin.php");
+                }
+            }
+        }
+      ?>
     </div>
   </div>
-  
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - E-Learning</title>
+    <nama>Register - E-Learning</nama>
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -39,6 +39,16 @@
                     <input type="password" id="password" name="password" placeholder="Create a password (min 8 characters)" minlength="8" required>
                 </div>
                 
+                <input type="radio" id="learner" name="role" value="Learner">
+                <label for="learner" id="label-learner">Learner</label>
+
+                <input type="radio" id="tutor" name="role" value="Tutor">
+                <label for="tutor" id="label-tutor">Tutor</label>
+
+                <div class="form-group"></div>
+
+                <div id="course-select-wrapper"></div>
+
                 <button type="submit" class="login-btn" name="register">Register</button>
                 
                 <div class="form-footer">
@@ -47,6 +57,33 @@
             </form>
         </div>
     </div>
+
+    <!-- <script>
+        const learnerRadio = document.getElementById('learner');
+        const tutorRadio = document.getElementById('tutor');
+        const labelLearner = document.getElementById('label-learner');
+        const labelTutor = document.getElementById('label-tutor');
+        const courseSelect = document.getElementById('course-select');
+
+        function updateRoleUI() {
+            if (learnerRadio.checked) {
+                labelLearner.style.fontWeight = 'bold';
+                labelTutor.style.fontWeight = 'normal';
+                courseSelect.style.display = 'none';
+            } else if (tutorRadio.checked) {
+                labelTutor.style.fontWeight = 'bold';
+                labelLearner.style.fontWeight = 'normal';
+                courseSelect.style.display = 'block';
+            }
+        }
+
+        learnerRadio.addEventListener('change', updateRoleUI);
+        tutorRadio.addEventListener('change', updateRoleUI);
+
+        // Inisialisasi saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', updateRoleUI);
+    </script> -->
+
 
     <?php
         require_once('connection.php');
@@ -61,11 +98,49 @@
                 if ($result) {
                     if ($result->num_rows < 1) {
                         if (strlen($password) >= 8) {
-                            $sql = "insert into users (name, email, password,role) values ('$name', '$email', '".password_hash($password, PASSWORD_BCRYPT)."', 'Learner')";
+                            if (empty($course)) {
+                                $role = "Admin"; 
+                            }
+                            
+                            // Ambil tanggal saat ini dalam format Y-m-d
+                            $created_at = date("Y-m-d");
+
+                            $sql = "INSERT INTO users (name, email, password, role, isVerified, created_at) VALUES ('$name', '$email', '".password_hash($password, PASSWORD_BCRYPT)."', '$role', NULL, '$created_at')";
                             $result = $conn->query($sql);
                             if ($result) {
-                                echo "<script>alert('Akun berhasil ditambahkan');window.location='login.php';</script>";
-                                exit();
+                                if ($role == "Tutor") {
+                                    $sql = "UPDATE users SET isVerified = 'Unverified' WHERE email = '$email'";
+                                    $result = $conn->query($sql);
+                                    if ($result) {
+                                        echo "<script>alert('Silahkan tunggu akun Anda terverifikasi!');</script>";
+                                    } else {
+                                        echo "<script>alert('Gagal membuat akun');</script>";
+                                    }
+                                } else if ($role == "Learner") {
+                                    echo "<script>alert('Akun berhasil ditambahkan')</script>";
+                                } else if ($role == "Admin") {
+                                    echo "<script>alert('Akun Admin berhasil ditambahkan')</script>";
+                                }
+                                
+                                $sql = "SELECT user_id FROM users WHERE email = '$email'";
+                                $result = $conn->query($sql);
+                                if ($result) {
+                                    $row = $result->fetch_assoc();
+                                    $user_id = $row['user_id'];
+                                    if ($role != "Admin" && isset($course)) { 
+                                        foreach ($course as $course_name) {
+                                            $sql = "SELECT id FROM course WHERE title = '$course_name'";
+                                            $result = $conn->query($sql);
+                                            if ($result) {
+                                                $row = $result->fetch_assoc();
+                                                $course_id = $row['id'];
+                                                $sql = "INSERT INTO user_course (user_id, course_id) VALUES ('$user_id', '$course_id')";
+                                                $conn->query($sql);
+                                            }
+                                        }
+                                    }
+                                }
+                                echo "<script>window.location='login.php'</script>";
                             } else {
                                 echo "<script>alert('Gagal membuat akun');</script>";
                             }

@@ -1,0 +1,10 @@
+Pengantar Art Design|Memahami dasar-dasar desain seni visual dan estetik.|class_art-design/kelas1.html
+Teori Warna|Mempelajari harmoni dan psikologi warna dalam desain.|class_art-design/kelas2.html
+Komposisi Visual|Prinsip penataan elemen dalam karya seni.|class_art-design/kelas3.html
+Tipografi|Teknik memilih dan mengatur font dalam desain.|class_art-design/kelas4.html
+Alat dan Media Desain|Penggunaan software dan media fisik dalam karya seni.|class_art-design/kelas1.html
+Desain untuk Media Digital|Membuat desain untuk web, aplikasi, dan media sosial.|class_art-design/kelas2.html
+Branding dan Identitas Visual|Mendesain logo dan elemen merek yang kuat.|class_art-design/kelas3.html
+Desain UI/UX Dasar|Dasar pengalaman pengguna dan antarmuka visual.|class_art-design/kelas4.html
+Proyek Ilustrasi Digital|Teknik ilustrasi menggunakan perangkat digital.|class_art-design/kelas1.html
+Portofolio dan Presentasi|Membuat portofolio desain dan cara menyajikannya secara profesional.|class_art-design/kelas2.html
